@@ -17,6 +17,7 @@ Set your topic as an environment variable:
 
 ```bash
 export NTFY_TOPIC="ai-code-notifications-yourname-random123"
+export MAX_MSG_LENGTH="500"
 ```
 
 ### 3. Test the notification
@@ -69,6 +70,7 @@ alias codex='codex_notify'
 | `NTFY_TOPIC` | `ai-code-notifications-$(whoami)` | Your ntfy topic name |
 | `NTFY_SERVER` | `https://ntfy.sh` | ntfy server URL |
 | `PLAY_SOUND` | `true` | Play sound on Mac |
+| `MAX_MSG_LENGTH` | `500` | Max characters included in the notification preview |
 
 ## Mac-only Sound
 

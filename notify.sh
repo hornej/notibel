@@ -6,7 +6,7 @@
 NTFY_TOPIC="${NTFY_TOPIC:-ai-code-notifications-$(whoami)}"
 NTFY_SERVER="${NTFY_SERVER:-https://ntfy.sh}"
 PLAY_SOUND="${PLAY_SOUND:-true}"
-MAX_MSG_LENGTH=200  # Truncate long messages
+MAX_MSG_LENGTH="${MAX_MSG_LENGTH:-500}"
 
 # Read hook input from stdin (Claude Code passes JSON via stdin)
 HOOK_INPUT=""
