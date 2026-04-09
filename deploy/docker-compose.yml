@@ -1,0 +1,14 @@
+services:
+  notibel:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    container_name: notibel
+    restart: unless-stopped
+    env_file:
+      - ../.env
+    ports:
+      - "8787:8787"
+    volumes:
+      - ../data:/data
+      - ../secrets:/secrets:ro

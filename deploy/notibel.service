@@ -1,0 +1,23 @@
+[Unit]
+Description=Notibel notification server
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=notibel
+Group=notibel
+EnvironmentFile=/etc/notibel/notibel.env
+ExecStart=/opt/notibel/bin/notibeld
+WorkingDirectory=/var/lib/notibel
+Restart=on-failure
+RestartSec=3
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/notibel
+ReadOnlyPaths=/etc/notibel
+
+[Install]
+WantedBy=multi-user.target
