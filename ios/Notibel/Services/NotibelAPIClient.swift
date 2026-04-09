@@ -59,6 +59,15 @@ struct NotibelAPIClient: Sendable {
         return try decoder.decode(TopicEventsResponse.self, from: data).events
     }
 
+    func fetchEvent(id: String) async throws -> NotibelEvent {
+        let url = eventURL(for: id)
+        var request = authorizedRequest(url: url)
+        request.httpMethod = "GET"
+
+        let data = try await perform(request)
+        return try decoder.decode(EventResponse.self, from: data).event
+    }
+
     func registerDevice(
         installationID: String,
         deviceToken: String,
@@ -119,6 +128,13 @@ struct NotibelAPIClient: Sendable {
             .appendingPathComponent("v1")
             .appendingPathComponent("devices")
             .appendingPathComponent(installationID)
+    }
+
+    private func eventURL(for eventID: String) -> URL {
+        baseURL
+            .appendingPathComponent("v1")
+            .appendingPathComponent("events")
+            .appendingPathComponent(eventID)
     }
 
     private var decoder: JSONDecoder {

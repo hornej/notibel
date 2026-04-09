@@ -148,6 +148,20 @@ func (s *Store) EventsForTopic(topic string, limit int) []Event {
 	return events
 }
 
+func (s *Store) EventByID(eventID string) (Event, bool) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	for i := len(s.state.Events) - 1; i >= 0; i-- {
+		event := s.state.Events[i]
+		if event.ID == eventID {
+			return event, true
+		}
+	}
+
+	return Event{}, false
+}
+
 func (s *Store) load() error {
 	data, err := os.ReadFile(s.path)
 	if err != nil {

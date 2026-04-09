@@ -16,6 +16,7 @@ import (
 
 var (
 	topicPattern        = regexp.MustCompile(`^[A-Za-z0-9._-]{1,64}$`)
+	eventPattern        = regexp.MustCompile(`^[A-Za-z0-9._-]{1,128}$`)
 	installationPattern = regexp.MustCompile(`^[A-Za-z0-9._-]{1,128}$`)
 )
 
@@ -38,6 +39,7 @@ func New(cfg config.Config, eventStore *store.Store, service *notifier.Service, 
 	mux.HandleFunc("/healthz", server.handleHealth)
 	mux.HandleFunc("/v1/publish/", server.handlePublish)
 	mux.HandleFunc("/v1/topics/", server.handleTopicEvents)
+	mux.HandleFunc("/v1/events/", server.handleEvent)
 	mux.HandleFunc("/v1/devices/", server.handleDevices)
 	return server.logRequests(mux)
 }
@@ -150,6 +152,33 @@ func (s *Server) handleDevices(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func (s *Server) handleEvent(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		writeError(w, http.StatusMethodNotAllowed, "method not allowed")
+		return
+	}
+	if !authorized(r, s.cfg.AppToken) {
+		writeError(w, http.StatusUnauthorized, "unauthorized")
+		return
+	}
+
+	eventID, ok := eventIDFromPath(r.URL.Path)
+	if !ok || !validEventID(eventID) {
+		writeError(w, http.StatusNotFound, "not found")
+		return
+	}
+
+	event, found := s.store.EventByID(eventID)
+	if !found {
+		writeError(w, http.StatusNotFound, "event not found")
+		return
+	}
+
+	writeJSON(w, http.StatusOK, map[string]any{
+		"event": event,
+	})
+}
+
 func (s *Server) handleUpsertDevice(w http.ResponseWriter, r *http.Request, installationID string) {
 	var payload struct {
 		DeviceToken string   `json:"deviceToken"`
@@ -213,6 +242,10 @@ func validInstallationID(installationID string) bool {
 	return installationPattern.MatchString(strings.TrimSpace(installationID))
 }
 
+func validEventID(eventID string) bool {
+	return eventPattern.MatchString(strings.TrimSpace(eventID))
+}
+
 func topicFromEventsPath(path string) (string, bool) {
 	trimmed := strings.Trim(strings.TrimPrefix(path, "/v1/topics/"), "/")
 	parts := strings.Split(trimmed, "/")
@@ -220,6 +253,14 @@ func topicFromEventsPath(path string) (string, bool) {
 		return "", false
 	}
 	return parts[0], true
+}
+
+func eventIDFromPath(path string) (string, bool) {
+	trimmed := strings.Trim(strings.TrimPrefix(path, "/v1/events/"), "/")
+	if trimmed == "" || strings.Contains(trimmed, "/") {
+		return "", false
+	}
+	return trimmed, true
 }
 
 func writeJSON(w http.ResponseWriter, status int, payload any) {

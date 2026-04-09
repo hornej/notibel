@@ -95,9 +95,18 @@ struct NotibelEvent: Codable, Hashable, Identifiable, Sendable {
     }
 }
 
+struct NotibelEventReference: Hashable, Sendable {
+    let eventID: String
+    let topic: String?
+}
+
 struct TopicEventsResponse: Codable, Sendable {
     let topic: String
     let events: [NotibelEvent]
+}
+
+struct EventResponse: Codable, Sendable {
+    let event: NotibelEvent
 }
 
 struct DeviceRegistrationPayload: Codable, Sendable {

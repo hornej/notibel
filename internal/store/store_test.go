@@ -58,3 +58,30 @@ func TestAddEventPrunesOldEntries(t *testing.T) {
 		t.Fatalf("unexpected events after pruning: %#v", got)
 	}
 }
+
+func TestEventByIDReturnsMatchingEvent(t *testing.T) {
+	t.Parallel()
+
+	db, err := New(t.TempDir() + "/store.json")
+	if err != nil {
+		t.Fatalf("new store: %v", err)
+	}
+
+	olderEvent := Event{ID: "1", Topic: "codex", Message: "older", CreatedAt: time.Unix(1, 0)}
+	newerEvent := Event{ID: "2", Topic: "claude", Message: "newer", CreatedAt: time.Unix(2, 0)}
+
+	if err := db.AddEvent(olderEvent, 10); err != nil {
+		t.Fatalf("add older event: %v", err)
+	}
+	if err := db.AddEvent(newerEvent, 10); err != nil {
+		t.Fatalf("add newer event: %v", err)
+	}
+
+	got, ok := db.EventByID("2")
+	if !ok {
+		t.Fatal("EventByID() did not find the event")
+	}
+	if got.ID != newerEvent.ID || got.Topic != newerEvent.Topic {
+		t.Fatalf("EventByID() = %#v, want %#v", got, newerEvent)
+	}
+}

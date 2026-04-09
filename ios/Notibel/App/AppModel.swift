@@ -12,6 +12,7 @@ final class AppModel: PushEventHandling {
     var deviceTokenHex = ""
     var deviceSyncStatus: DeviceSyncStatus = .idle
     var pendingTopic: String?
+    var pendingEventReference: NotibelEventReference?
     var reloadSeed = UUID()
 
     @ObservationIgnored private let settingsStore: SettingsStore
@@ -99,6 +100,11 @@ final class AppModel: PushEventHandling {
     func fetchEvents(for topic: String) async throws -> [NotibelEvent] {
         let client = try makeClient()
         return try await client.fetchEvents(topic: topic, limit: 50)
+    }
+
+    func fetchEvent(id: String) async throws -> NotibelEvent {
+        let client = try makeClient()
+        return try await client.fetchEvent(id: id)
     }
 
     @discardableResult
@@ -199,9 +205,14 @@ final class AppModel: PushEventHandling {
     }
 
     func handleNotificationOpen(userInfo: [AnyHashable: Any]) async {
-        if let topic = Self.topic(from: userInfo) {
+        if let eventReference = Self.eventReference(from: userInfo) {
+            selectedTab = .notifications
+            pendingEventReference = eventReference
+            pendingTopic = nil
+        } else if let topic = Self.topic(from: userInfo) {
             selectedTab = .notifications
             pendingTopic = topic
+            pendingEventReference = nil
         }
     }
 
@@ -218,6 +229,22 @@ final class AppModel: PushEventHandling {
             return topic
         }
         return nil
+    }
+
+    private static func eventReference(from userInfo: [AnyHashable: Any]) -> NotibelEventReference? {
+        guard let payload = userInfo["notibel"] as? [String: Any],
+              let eventID = (payload["event_id"] as? String)?.trimmingCharacters(in: .whitespacesAndNewlines),
+              !eventID.isEmpty
+        else {
+            return nil
+        }
+
+        let topic = (payload["topic"] as? String)?
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        return NotibelEventReference(
+            eventID: eventID,
+            topic: topic.flatMap { $0.isEmpty ? nil : $0 }
+        )
     }
 }
 

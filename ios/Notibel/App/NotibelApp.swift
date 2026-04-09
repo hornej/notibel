@@ -14,7 +14,7 @@ struct NotibelApp: App {
             RootView()
                 .environment(appModel)
                 .task {
-                    PushBridge.shared.attach(appModel)
+                    await PushBridge.shared.attach(appModel)
                     await appModel.start()
                 }
         }

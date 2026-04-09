@@ -117,3 +117,77 @@ struct EventDetailView: View {
         return formatter
     }()
 }
+
+struct EventDetailLoaderView: View {
+    @Environment(AppModel.self) private var appModel
+
+    let reference: NotibelEventReference
+
+    @State private var state: LoadState<NotibelEvent> = .idle
+
+    var body: some View {
+        Group {
+            switch state {
+            case .idle, .loading:
+                ProgressView("Loading notification...")
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .padding(24)
+                    .background(Color(uiColor: .systemGroupedBackground))
+            case .failed(let message):
+                ContentUnavailableView(
+                    "Notification Unavailable",
+                    systemImage: "exclamationmark.triangle",
+                    description: Text(message)
+                )
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background(Color(uiColor: .systemGroupedBackground))
+            case .loaded(let event):
+                EventDetailView(event: event)
+            }
+        }
+        .navigationTitle("Notification")
+        .navigationBarTitleDisplayMode(.inline)
+        .task(id: loadTaskID) {
+            await loadEvent()
+        }
+    }
+
+    private var loadTaskID: EventDetailLoadTaskID {
+        EventDetailLoadTaskID(reloadSeed: appModel.reloadSeed, eventID: reference.eventID)
+    }
+
+    private func loadEvent() async {
+        guard appModel.isConfiguredForServer else {
+            state = .failed("Add the server URL and app token in Settings before opening notification details.")
+            return
+        }
+
+        if !isShowingLoadedEvent {
+            state = .loading
+        }
+
+        do {
+            let event = try await appModel.fetchEvent(id: reference.eventID)
+            guard !Task.isCancelled else {
+                return
+            }
+            state = .loaded(event)
+        } catch is CancellationError {
+            return
+        } catch {
+            state = .failed(error.localizedDescription)
+        }
+    }
+
+    private var isShowingLoadedEvent: Bool {
+        if case .loaded = state {
+            return true
+        }
+        return false
+    }
+}
+
+private struct EventDetailLoadTaskID: Hashable {
+    let reloadSeed: UUID
+    let eventID: String
+}

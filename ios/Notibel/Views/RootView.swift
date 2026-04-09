@@ -21,6 +21,13 @@ struct RootView: View {
             .tabItem { AppTab.settings.label }
             .tag(AppTab.settings)
         }
+        .onChange(of: appModel.pendingEventReference) { _, eventReference in
+            guard let eventReference else {
+                return
+            }
+            openEventReference(eventReference)
+            appModel.pendingEventReference = nil
+        }
         .onChange(of: appModel.pendingTopic) { _, topic in
             guard let topic else {
                 return
@@ -37,6 +44,8 @@ struct RootView: View {
             TopicDetailView(topic: topic)
         case .event(let event):
             EventDetailView(event: event)
+        case .eventReference(let eventReference):
+            EventDetailLoaderView(reference: eventReference)
         }
     }
 
@@ -50,5 +59,10 @@ struct RootView: View {
     private func openTopic(_ topic: String) {
         appModel.selectedTab = .notifications
         notificationsPath = [.topic(topic)]
+    }
+
+    private func openEventReference(_ eventReference: NotibelEventReference) {
+        appModel.selectedTab = .notifications
+        notificationsPath = [.eventReference(eventReference)]
     }
 }
