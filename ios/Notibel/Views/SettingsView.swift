@@ -2,7 +2,13 @@ import SwiftUI
 
 struct SettingsView: View {
     @Environment(AppModel.self) private var appModel
-    @State private var isShowingAppToken = false
+    @FocusState private var focusedField: Field?
+    @State private var appTokenDraft = ""
+    @State private var isReplacingAppToken = false
+
+    private enum Field: Hashable {
+        case appToken
+    }
 
     var body: some View {
         Form {
@@ -12,26 +18,7 @@ struct SettingsView: View {
                     .autocorrectionDisabled()
                     .keyboardType(.URL)
 
-                HStack(spacing: 12) {
-                    Group {
-                        if isShowingAppToken {
-                            TextField("App token", text: appTokenBinding)
-                        } else {
-                            SecureField("App token", text: appTokenBinding)
-                        }
-                    }
-                    .textInputAutocapitalization(.never)
-                    .autocorrectionDisabled()
-
-                    Button {
-                        isShowingAppToken.toggle()
-                    } label: {
-                        Image(systemName: isShowingAppToken ? "eye.slash" : "eye")
-                            .foregroundStyle(.secondary)
-                    }
-                    .buttonStyle(.plain)
-                    .accessibilityLabel(isShowingAppToken ? "Hide app token" : "Show app token")
-                }
+                appTokenRow
             } header: {
                 Text("Server")
             }
@@ -83,22 +70,98 @@ struct SettingsView: View {
             }
         }
         .navigationTitle("Settings")
+        .onAppear {
+            syncAppTokenDraft()
+        }
+        .onChange(of: focusedField) { oldField, newField in
+            guard oldField == .appToken, newField != .appToken else {
+                return
+            }
+            finishAppTokenEntry()
+        }
         .onDisappear {
+            finishAppTokenEntry()
             appModel.commitSettingsEdits()
         }
+    }
+
+    @ViewBuilder
+    private var appTokenRow: some View {
+        if hasSavedAppToken && !isReplacingAppToken {
+            HStack(spacing: 12) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("App token saved")
+                        .foregroundStyle(.primary)
+                    Text("Enter a new token to replace it.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+
+                Spacer(minLength: 12)
+
+                Button("Replace") {
+                    beginAppTokenReplacement()
+                }
+                .buttonStyle(.borderless)
+            }
+        } else {
+            TextField("App token", text: $appTokenDraft)
+                .textInputAutocapitalization(.never)
+                .autocorrectionDisabled()
+                .focused($focusedField, equals: .appToken)
+                .submitLabel(.done)
+                .onSubmit {
+                    finishAppTokenEntry()
+                }
+        }
+    }
+
+    private var hasSavedAppToken: Bool {
+        !appModel.settings.appToken.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
+    private func beginAppTokenReplacement() {
+        isReplacingAppToken = true
+        appTokenDraft = ""
+        focusedField = .appToken
+    }
+
+    private func finishAppTokenEntry() {
+        let cleanedToken = appTokenDraft.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        if isReplacingAppToken {
+            if !cleanedToken.isEmpty {
+                appModel.updateAppToken(cleanedToken)
+            }
+            isReplacingAppToken = false
+            appTokenDraft = ""
+            return
+        }
+
+        guard !hasSavedAppToken else {
+            appTokenDraft = ""
+            return
+        }
+
+        appModel.updateAppToken(cleanedToken)
+        if !cleanedToken.isEmpty {
+            appTokenDraft = ""
+        }
+    }
+
+    private func syncAppTokenDraft() {
+        guard !hasSavedAppToken else {
+            appTokenDraft = ""
+            return
+        }
+
+        appTokenDraft = appModel.settings.appToken
     }
 
     private var serverURLBinding: Binding<String> {
         Binding(
             get: { appModel.settings.serverURLString },
             set: { appModel.updateServerURL($0) }
-        )
-    }
-
-    private var appTokenBinding: Binding<String> {
-        Binding(
-            get: { appModel.settings.appToken },
-            set: { appModel.updateAppToken($0) }
         )
     }
 

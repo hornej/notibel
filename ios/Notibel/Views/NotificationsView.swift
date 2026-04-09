@@ -5,15 +5,12 @@ struct NotificationsView: View {
 
     @State private var state: LoadState<[NotibelEvent]> = .idle
     @State private var isPresentingAddTopic = false
+    @State private var isPresentingTopicFilters = false
     @State private var selectedTopics = Set<String>()
     @State private var hasInitializedTopicFilter = false
 
     var body: some View {
         List {
-            if appModel.hasTopics {
-                topicFilterSection
-            }
-
             notificationContent
         }
         .listStyle(.plain)
@@ -28,7 +25,16 @@ struct NotificationsView: View {
             await loadNotifications()
         }
         .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
+            ToolbarItemGroup(placement: .topBarTrailing) {
+                if appModel.hasTopics {
+                    Button {
+                        isPresentingTopicFilters = true
+                    } label: {
+                        filterButtonLabel
+                    }
+                    .accessibilityLabel(filterAccessibilityLabel)
+                }
+
                 Button {
                     isPresentingAddTopic = true
                 } label: {
@@ -44,6 +50,9 @@ struct NotificationsView: View {
                     }
                 }
             }
+        }
+        .sheet(isPresented: $isPresentingTopicFilters) {
+            topicFilterSheet
         }
     }
 
@@ -63,59 +72,11 @@ struct NotificationsView: View {
         NotificationsLoadTaskID(reloadSeed: appModel.reloadSeed, topics: filteredTopics)
     }
 
-    private var topicFilterSection: some View {
-        Section {
-            Button {
-                selectedTopics = Set(availableTopics)
-            } label: {
-                HStack(spacing: 12) {
-                    Image(systemName: allTopicsSelected ? "checkmark.circle.fill" : "line.3.horizontal.decrease.circle")
-                        .foregroundStyle(allTopicsSelected ? Color.accentColor : Color.secondary)
-
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("Show All Topics")
-                            .font(.headline)
-                        Text("Include every registered topic in the feed below.")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
-
-                    Spacer(minLength: 0)
-                }
-                .contentShape(Rectangle())
-            }
-            .buttonStyle(.plain)
-            .disabled(allTopicsSelected)
-            .listRowInsets(Self.rowInsets)
-
-            ForEach(availableTopics, id: \.self) { topic in
-                Button {
-                    toggleTopicSelection(topic)
-                } label: {
-                    HStack(spacing: 12) {
-                        Image(systemName: selectedTopics.contains(topic) ? "checkmark.circle.fill" : "circle")
-                            .foregroundStyle(selectedTopics.contains(topic) ? Color.accentColor : Color.secondary)
-
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text(topic)
-                                .font(.headline)
-                            Text(selectedTopics.contains(topic) ? "Included in notifications" : "Filtered out")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        }
-
-                        Spacer(minLength: 0)
-                    }
-                    .contentShape(Rectangle())
-                }
-                .buttonStyle(.plain)
-                .listRowInsets(Self.rowInsets)
-            }
-            .onDelete(perform: removeTopics)
-        } header: {
-            Text("Topic Filters")
-        } footer: {
-            Text("Tap a topic to include or exclude it from the feed. Swipe left on a topic to remove it.")
+    private var filterButtonLabel: some View {
+        HStack(spacing: 4) {
+            Image(systemName: allTopicsSelected ? "line.3.horizontal.decrease.circle" : "line.3.horizontal.decrease.circle.fill")
+            Text(allTopicsSelected ? "All" : "\(filteredTopics.count)")
+                .font(.caption.weight(.semibold))
         }
     }
 
@@ -201,6 +162,87 @@ struct NotificationsView: View {
 
     private static let rowInsets = EdgeInsets(top: 0, leading: 12, bottom: 0, trailing: 12)
 
+    private var filterAccessibilityLabel: String {
+        if allTopicsSelected {
+            return "Filter topics, currently showing all topics"
+        }
+
+        return "Filter topics, currently showing \(filteredTopics.count) topics"
+    }
+
+    private var topicFilterSheet: some View {
+        NavigationStack {
+            List {
+                Section {
+                    Button {
+                        selectedTopics = Set(availableTopics)
+                    } label: {
+                        HStack(spacing: 12) {
+                            Image(systemName: allTopicsSelected ? "checkmark.circle.fill" : "circle")
+                                .foregroundStyle(allTopicsSelected ? Color.accentColor : Color.secondary)
+
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("All Topics")
+                                    .font(.headline)
+                                Text("Show notifications from every topic.")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+
+                            Spacer(minLength: 0)
+                        }
+                        .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(allTopicsSelected)
+
+                    ForEach(availableTopics, id: \.self) { topic in
+                        Button {
+                            toggleTopicSelection(topic)
+                        } label: {
+                            HStack(spacing: 12) {
+                                Image(systemName: selectedTopics.contains(topic) ? "checkmark.circle.fill" : "circle")
+                                    .foregroundStyle(selectedTopics.contains(topic) ? Color.accentColor : Color.secondary)
+
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text(topic)
+                                        .font(.headline)
+                                    Text(selectedTopics.contains(topic) ? "Included in notifications" : "Filtered out")
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }
+
+                                Spacer(minLength: 0)
+                            }
+                            .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                        .swipeActions {
+                            Button(role: .destructive) {
+                                removeTopic(topic)
+                            } label: {
+                                Label("Delete", systemImage: "trash")
+                            }
+                        }
+                    }
+                } header: {
+                    Text("Topics")
+                } footer: {
+                    Text("Tap to include or exclude a topic. Swipe left to remove a topic.")
+                }
+            }
+            .navigationTitle("Filter Topics")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Done") {
+                        isPresentingTopicFilters = false
+                    }
+                }
+            }
+        }
+    }
+
     private func loadNotifications() async {
         guard appModel.isConfiguredForServer, appModel.hasTopics, !filteredTopics.isEmpty else {
             state = .idle
@@ -267,6 +309,14 @@ struct NotificationsView: View {
         Task {
             await appModel.removeTopics(at: offsets)
         }
+    }
+
+    private func removeTopic(_ topic: String) {
+        guard let topicIndex = availableTopics.firstIndex(of: topic) else {
+            return
+        }
+
+        removeTopics(at: IndexSet(integer: topicIndex))
     }
 }
 
