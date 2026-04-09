@@ -74,13 +74,17 @@ struct SettingsView: View {
             syncAppTokenDraft()
         }
         .onChange(of: focusedField) { oldField, newField in
-            guard oldField == .appToken, newField != .appToken else {
+            guard oldField == .appToken, newField != .appToken, !isReplacingAppToken else {
                 return
             }
-            finishAppTokenEntry()
+            finishInitialAppTokenEntry()
         }
         .onDisappear {
-            finishAppTokenEntry()
+            if isReplacingAppToken {
+                cancelAppTokenReplacement()
+            } else {
+                finishInitialAppTokenEntry()
+            }
             appModel.commitSettingsEdits()
         }
     }
@@ -104,6 +108,33 @@ struct SettingsView: View {
                 }
                 .buttonStyle(.borderless)
             }
+        } else if isReplacingAppToken {
+            VStack(alignment: .leading, spacing: 12) {
+                TextField("New app token", text: $appTokenDraft)
+                    .textInputAutocapitalization(.never)
+                    .autocorrectionDisabled()
+                    .focused($focusedField, equals: .appToken)
+                    .submitLabel(.done)
+                    .onSubmit {
+                        saveReplacementToken()
+                    }
+
+                HStack {
+                    Button("Cancel") {
+                        cancelAppTokenReplacement()
+                    }
+                    .buttonStyle(.borderless)
+
+                    Spacer()
+
+                    Button("Save") {
+                        saveReplacementToken()
+                    }
+                    .buttonStyle(.borderless)
+                    .disabled(normalizedAppTokenDraft.isEmpty)
+                }
+                .font(.subheadline)
+            }
         } else {
             TextField("App token", text: $appTokenDraft)
                 .textInputAutocapitalization(.never)
@@ -111,7 +142,7 @@ struct SettingsView: View {
                 .focused($focusedField, equals: .appToken)
                 .submitLabel(.done)
                 .onSubmit {
-                    finishAppTokenEntry()
+                    finishInitialAppTokenEntry()
                 }
         }
     }
@@ -126,27 +157,33 @@ struct SettingsView: View {
         focusedField = .appToken
     }
 
-    private func finishAppTokenEntry() {
-        let cleanedToken = appTokenDraft.trimmingCharacters(in: .whitespacesAndNewlines)
-
-        if isReplacingAppToken {
-            if !cleanedToken.isEmpty {
-                appModel.updateAppToken(cleanedToken)
-            }
-            isReplacingAppToken = false
-            appTokenDraft = ""
-            return
-        }
-
+    private func finishInitialAppTokenEntry() {
         guard !hasSavedAppToken else {
             appTokenDraft = ""
             return
         }
 
-        appModel.updateAppToken(cleanedToken)
-        if !cleanedToken.isEmpty {
+        appModel.updateAppToken(normalizedAppTokenDraft)
+        if !normalizedAppTokenDraft.isEmpty {
             appTokenDraft = ""
         }
+    }
+
+    private func saveReplacementToken() {
+        guard !normalizedAppTokenDraft.isEmpty else {
+            return
+        }
+
+        appModel.updateAppToken(normalizedAppTokenDraft)
+        isReplacingAppToken = false
+        appTokenDraft = ""
+        focusedField = nil
+    }
+
+    private func cancelAppTokenReplacement() {
+        isReplacingAppToken = false
+        appTokenDraft = ""
+        focusedField = nil
     }
 
     private func syncAppTokenDraft() {
@@ -156,6 +193,10 @@ struct SettingsView: View {
         }
 
         appTokenDraft = appModel.settings.appToken
+    }
+
+    private var normalizedAppTokenDraft: String {
+        appTokenDraft.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
     private var serverURLBinding: Binding<String> {
