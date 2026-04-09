@@ -1,0 +1,480 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 54;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		0F3A1C20C11E4A1290010001 /* FontRegistrar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F3A1C20C11E4A1290010002 /* FontRegistrar.swift */; };
+		0F3A1C20C11E4A1290010003 /* BerkeleyMono-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 0F3A1C20C11E4A1290010004 /* BerkeleyMono-Regular.ttf */; };
+		3214B5B683CD6F39C171C281 /* AddTopicSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 394C812D8A7B870993B18512 /* AddTopicSheet.swift */; };
+		383E4B3BCD2117DEDA1781B3 /* SettingsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3E29B80D2A06405B8363919 /* SettingsStore.swift */; };
+		40D1A9F55431DAD2618EF0D1 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30300A12C5BF14049B50F9B8 /* SettingsView.swift */; };
+		47C661CC3F894DFABF7C2C01 /* EventDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47C661CC3F894DFABF7C2C00 /* EventDetailView.swift */; };
+		49B2DBBD0925EBF8CB37F89A /* AppRoute.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4FCD652A3091E63B3227D7F /* AppRoute.swift */; };
+		4AEA69581ACBC60118A96F4B /* PushBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 904941E035F5B551C4C60B8D /* PushBridge.swift */; };
+		4FF311BB41B5D742458E1A93 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3920908F35A2305D4361C67F /* Foundation.framework */; };
+		51F0901799FAA62903B1C146 /* EventRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA6F88DF7FCF0A6F2623461A /* EventRowView.swift */; };
+		63A2521EC132B7BB1A2018C7 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = FA63D9489E80102DB965B1D5 /* Assets.xcassets */; };
+		63A2521EC132B7BB1A2018C8 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FA63D9489E80102DB965B1D6 /* LaunchScreen.storyboard */; };
+		68F111570AD70A82E17868C4 /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2229483CF6D82FC207456737 /* AppModel.swift */; };
+		6EDB80C0FD952BC57EC98C75 /* NotibelAPIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2FC963981CC81D6D10C232A /* NotibelAPIClient.swift */; };
+		8560F70CB06EC5D42DFD35F7 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EED7676F6D0593CF5FF04E02 /* RootView.swift */; };
+		8641E0C5BC8E45A0C3E48799 /* NotificationsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 837E845FF828BCD1D0452018 /* NotificationsView.swift */; };
+		93FF2B2AD056DEC1941CA530 /* AppTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1C65EBFB624B96C551BBE9F /* AppTab.swift */; };
+		99B78A5913A23FABEA3E5931 /* LoadState.swift in Sources */ = {isa = PBXBuildFile; fileRef = E89964EA7B5E8B328EA5EE3C /* LoadState.swift */; };
+		A1B256895EAC91BD56D170D3 /* NotibelAppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAC5DA1303CB4B1B05016FB9 /* NotibelAppDelegate.swift */; };
+		B4C5B5F7AA98F4C0D77BDB8F /* NotibelSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6BD44C7AFA07D5D250A3F78 /* NotibelSettings.swift */; };
+		B7D0CB6B3B471CD2184D5669 /* NotibelApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4679F87E79EF4DDC4F30074 /* NotibelApp.swift */; };
+		D7171C136FE8C32276F292FD /* NotibelEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20C4970503300A968FFCC2D7 /* NotibelEvent.swift */; };
+		EB0A1185952293B83D104846 /* TopicDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26E0324E117B576F7EDB52EF /* TopicDetailView.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		0F3A1C20C11E4A1290010002 /* FontRegistrar.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FontRegistrar.swift; sourceTree = "<group>"; };
+		0F3A1C20C11E4A1290010004 /* BerkeleyMono-Regular.ttf */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = file; path = "Fonts/BerkeleyMono-Regular.ttf"; sourceTree = "<group>"; };
+		20C4970503300A968FFCC2D7 /* NotibelEvent.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NotibelEvent.swift; sourceTree = "<group>"; };
+		2229483CF6D82FC207456737 /* AppModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppModel.swift; sourceTree = "<group>"; };
+		26E0324E117B576F7EDB52EF /* TopicDetailView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TopicDetailView.swift; sourceTree = "<group>"; };
+		2EACE2DCCFB8D5F1A103A144 /* Notibel.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Notibel.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		30300A12C5BF14049B50F9B8 /* SettingsView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		47C661CC3F894DFABF7C2C00 /* EventDetailView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = EventDetailView.swift; sourceTree = "<group>"; };
+		3920908F35A2305D4361C67F /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS14.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
+		394C812D8A7B870993B18512 /* AddTopicSheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AddTopicSheet.swift; sourceTree = "<group>"; };
+		837E845FF828BCD1D0452018 /* NotificationsView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NotificationsView.swift; sourceTree = "<group>"; };
+		904941E035F5B551C4C60B8D /* PushBridge.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PushBridge.swift; sourceTree = "<group>"; };
+		A20D696DDECB0CF049CA8E48 /* Notibel.entitlements */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.entitlements; path = Notibel.entitlements; sourceTree = "<group>"; };
+		A4679F87E79EF4DDC4F30074 /* NotibelApp.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NotibelApp.swift; sourceTree = "<group>"; };
+		B3E29B80D2A06405B8363919 /* SettingsStore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SettingsStore.swift; sourceTree = "<group>"; };
+		BA6F88DF7FCF0A6F2623461A /* EventRowView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = EventRowView.swift; sourceTree = "<group>"; };
+		C4FCD652A3091E63B3227D7F /* AppRoute.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppRoute.swift; sourceTree = "<group>"; };
+		CAC5DA1303CB4B1B05016FB9 /* NotibelAppDelegate.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NotibelAppDelegate.swift; sourceTree = "<group>"; };
+		E6BD44C7AFA07D5D250A3F78 /* NotibelSettings.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NotibelSettings.swift; sourceTree = "<group>"; };
+		E89964EA7B5E8B328EA5EE3C /* LoadState.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LoadState.swift; sourceTree = "<group>"; };
+		EED7676F6D0593CF5FF04E02 /* RootView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
+		F1C65EBFB624B96C551BBE9F /* AppTab.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppTab.swift; sourceTree = "<group>"; };
+		F2FC963981CC81D6D10C232A /* NotibelAPIClient.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NotibelAPIClient.swift; sourceTree = "<group>"; };
+		FA63D9489E80102DB965B1D5 /* Assets.xcassets */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		FA63D9489E80102DB965B1D6 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		B6AD25B2306423D1E32AEA54 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4FF311BB41B5D742458E1A93 /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		0ADCA35E554551E1909DE624 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				2EACE2DCCFB8D5F1A103A144 /* Notibel.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		359142BBCD9C9B160001F175 /* iOS */ = {
+			isa = PBXGroup;
+			children = (
+				3920908F35A2305D4361C67F /* Foundation.framework */,
+			);
+			name = iOS;
+			sourceTree = "<group>";
+		};
+		3E5E6C4D2EFC10CC7EB56B30 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				B3E29B80D2A06405B8363919 /* SettingsStore.swift */,
+				F2FC963981CC81D6D10C232A /* NotibelAPIClient.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		47080EA25D7804EB69E89748 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				E6BD44C7AFA07D5D250A3F78 /* NotibelSettings.swift */,
+				20C4970503300A968FFCC2D7 /* NotibelEvent.swift */,
+				E89964EA7B5E8B328EA5EE3C /* LoadState.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		58538E93D90D2BE320CFAF39 = {
+			isa = PBXGroup;
+			children = (
+				0ADCA35E554551E1909DE624 /* Products */,
+				D48A281D9C486AD5E7A8E2CA /* Frameworks */,
+				A139EDF0216D946794D055F6 /* Notibel */,
+			);
+			sourceTree = "<group>";
+		};
+		9833424AE85227ADEC7B8CF7 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				0F3A1C20C11E4A1290010002 /* FontRegistrar.swift */,
+				A4679F87E79EF4DDC4F30074 /* NotibelApp.swift */,
+				CAC5DA1303CB4B1B05016FB9 /* NotibelAppDelegate.swift */,
+				904941E035F5B551C4C60B8D /* PushBridge.swift */,
+				2229483CF6D82FC207456737 /* AppModel.swift */,
+				F1C65EBFB624B96C551BBE9F /* AppTab.swift */,
+				C4FCD652A3091E63B3227D7F /* AppRoute.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		A139EDF0216D946794D055F6 /* Notibel */ = {
+			isa = PBXGroup;
+			children = (
+				9833424AE85227ADEC7B8CF7 /* App */,
+				47080EA25D7804EB69E89748 /* Models */,
+				3E5E6C4D2EFC10CC7EB56B30 /* Services */,
+				C231017DFAFF8CE82D4E9142 /* Views */,
+				B3E3FF90FB0146FBF74D5D3E /* Resources */,
+				A20D696DDECB0CF049CA8E48 /* Notibel.entitlements */,
+			);
+			path = Notibel;
+			sourceTree = "<group>";
+		};
+		B3E3FF90FB0146FBF74D5D3E /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				FA63D9489E80102DB965B1D5 /* Assets.xcassets */,
+				0F3A1C20C11E4A1290010004 /* BerkeleyMono-Regular.ttf */,
+				FA63D9489E80102DB965B1D6 /* LaunchScreen.storyboard */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		C231017DFAFF8CE82D4E9142 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				EED7676F6D0593CF5FF04E02 /* RootView.swift */,
+				837E845FF828BCD1D0452018 /* NotificationsView.swift */,
+				26E0324E117B576F7EDB52EF /* TopicDetailView.swift */,
+				30300A12C5BF14049B50F9B8 /* SettingsView.swift */,
+				394C812D8A7B870993B18512 /* AddTopicSheet.swift */,
+				BA6F88DF7FCF0A6F2623461A /* EventRowView.swift */,
+				47C661CC3F894DFABF7C2C00 /* EventDetailView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		D48A281D9C486AD5E7A8E2CA /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				359142BBCD9C9B160001F175 /* iOS */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		4421DFE8BC3A822DC4AB3ADB /* Notibel */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 462BA0D8CF306979EF160F1D /* Build configuration list for PBXNativeTarget "Notibel" */;
+			buildPhases = (
+				5A30C228E52DDA3D616917A7 /* Sources */,
+				B6AD25B2306423D1E32AEA54 /* Frameworks */,
+				6C604B07BCCB2C4B0A06990C /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Notibel;
+			productName = Notibel;
+			productReference = 2EACE2DCCFB8D5F1A103A144 /* Notibel.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		2EAF1A8D1EB5C24F5D1F7C75 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastSwiftMigration = 9999;
+				LastSwiftUpdateCheck = 1240;
+				LastUpgradeCheck = 2640;
+				TargetAttributes = {
+					4421DFE8BC3A822DC4AB3ADB = {
+						CreatedOnToolsVersion = 26.4;
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = 2C094CB2CA5EFC519261A7C7 /* Build configuration list for PBXProject "Notibel" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 58538E93D90D2BE320CFAF39;
+			productRefGroup = 0ADCA35E554551E1909DE624 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				4421DFE8BC3A822DC4AB3ADB /* Notibel */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		6C604B07BCCB2C4B0A06990C /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0F3A1C20C11E4A1290010003 /* BerkeleyMono-Regular.ttf in Resources */,
+				63A2521EC132B7BB1A2018C7 /* Assets.xcassets in Resources */,
+				63A2521EC132B7BB1A2018C8 /* LaunchScreen.storyboard in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		5A30C228E52DDA3D616917A7 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0F3A1C20C11E4A1290010001 /* FontRegistrar.swift in Sources */,
+				B7D0CB6B3B471CD2184D5669 /* NotibelApp.swift in Sources */,
+				A1B256895EAC91BD56D170D3 /* NotibelAppDelegate.swift in Sources */,
+				4AEA69581ACBC60118A96F4B /* PushBridge.swift in Sources */,
+				68F111570AD70A82E17868C4 /* AppModel.swift in Sources */,
+				93FF2B2AD056DEC1941CA530 /* AppTab.swift in Sources */,
+				49B2DBBD0925EBF8CB37F89A /* AppRoute.swift in Sources */,
+				B4C5B5F7AA98F4C0D77BDB8F /* NotibelSettings.swift in Sources */,
+				D7171C136FE8C32276F292FD /* NotibelEvent.swift in Sources */,
+				99B78A5913A23FABEA3E5931 /* LoadState.swift in Sources */,
+				383E4B3BCD2117DEDA1781B3 /* SettingsStore.swift in Sources */,
+				6EDB80C0FD952BC57EC98C75 /* NotibelAPIClient.swift in Sources */,
+				8560F70CB06EC5D42DFD35F7 /* RootView.swift in Sources */,
+				8641E0C5BC8E45A0C3E48799 /* NotificationsView.swift in Sources */,
+				EB0A1185952293B83D104846 /* TopicDetailView.swift in Sources */,
+				40D1A9F55431DAD2618EF0D1 /* SettingsView.swift in Sources */,
+				3214B5B683CD6F39C171C281 /* AddTopicSheet.swift in Sources */,
+				51F0901799FAA62903B1C146 /* EventRowView.swift in Sources */,
+				47C661CC3F894DFABF7C2C01 /* EventDetailView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		122874F64893753486AF4F18 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = "";
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_ENTITLEMENTS = Notibel/Notibel.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = Notibel;
+				INFOPLIST_KEY_NSUserNotificationsUsageDescription = "Notibel sends notifications when your coding agents and automations complete work.";
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.notibel.app;
+				PRODUCT_NAME = Notibel;
+				SDKROOT = iphoneos;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		804C98A8BDACB17DBE97C3FE /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = "";
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_ENTITLEMENTS = Notibel/Notibel.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = Notibel;
+				INFOPLIST_KEY_NSUserNotificationsUsageDescription = "Notibel sends notifications when your coding agents and automations complete work.";
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.notibel.app;
+				PRODUCT_NAME = Notibel;
+				SDKROOT = iphoneos;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		9708CFCEBC9E7A898E794EC0 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		BF80FE4793100B0F2468C74B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		2C094CB2CA5EFC519261A7C7 /* Build configuration list for PBXProject "Notibel" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BF80FE4793100B0F2468C74B /* Debug */,
+				9708CFCEBC9E7A898E794EC0 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		462BA0D8CF306979EF160F1D /* Build configuration list for PBXNativeTarget "Notibel" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				122874F64893753486AF4F18 /* Release */,
+				804C98A8BDACB17DBE97C3FE /* Debug */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 2EAF1A8D1EB5C24F5D1F7C75 /* Project object */;
+}
