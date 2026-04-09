@@ -241,11 +241,98 @@ final class AppModel: PushEventHandling {
 
         let topic = (payload["topic"] as? String)?
             .trimmingCharacters(in: .whitespacesAndNewlines)
+        let source = (payload["source"] as? String)?
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        let project = (payload["project"] as? String)?
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        let threadTitle = (payload["thread_title"] as? String)?
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        let createdAt = Self.createdAt(from: payload["created_at"])
+        let fallbackEvent = Self.fallbackEvent(
+            userInfo: userInfo,
+            eventID: eventID,
+            topic: topic,
+            source: source,
+            project: project,
+            threadTitle: threadTitle,
+            createdAt: createdAt
+        )
+
         return NotibelEventReference(
             eventID: eventID,
-            topic: topic.flatMap { $0.isEmpty ? nil : $0 }
+            topic: topic.flatMap { $0.isEmpty ? nil : $0 },
+            fallbackEvent: fallbackEvent
         )
     }
+
+    private static func fallbackEvent(
+        userInfo: [AnyHashable: Any],
+        eventID: String,
+        topic: String?,
+        source: String?,
+        project: String?,
+        threadTitle: String?,
+        createdAt: Date
+    ) -> NotibelEvent? {
+        guard let topic, !topic.isEmpty else {
+            return nil
+        }
+
+        let alert = (userInfo["aps"] as? [String: Any])?["alert"]
+        let title: String
+        let message: String
+
+        if let alertText = alert as? String {
+            title = "Notification"
+            message = alertText
+        } else {
+            let alertPayload = alert as? [String: Any]
+            title = ((alertPayload?["title"] as? String)?
+                .trimmingCharacters(in: .whitespacesAndNewlines))
+                .flatMap { $0.isEmpty ? nil : $0 } ?? "Notification"
+            message = ((alertPayload?["body"] as? String)?
+                .trimmingCharacters(in: .whitespacesAndNewlines))
+                .flatMap { $0.isEmpty ? nil : $0 } ?? "Open Notibel to view the latest response."
+        }
+
+        return NotibelEvent(
+            id: eventID,
+            topic: topic,
+            title: title,
+            message: message,
+            source: source.flatMap { $0.isEmpty ? nil : $0 },
+            project: project.flatMap { $0.isEmpty ? nil : $0 },
+            threadTitle: threadTitle.flatMap { $0.isEmpty ? nil : $0 },
+            createdAt: createdAt
+        )
+    }
+
+    private static func createdAt(from rawValue: Any?) -> Date {
+        guard let rawValue = rawValue as? String else {
+            return .now
+        }
+
+        if let parsedDate = createdAtFormatterWithFractionalSeconds.date(from: rawValue) {
+            return parsedDate
+        }
+        if let parsedDate = createdAtFormatter.date(from: rawValue) {
+            return parsedDate
+        }
+
+        return .now
+    }
+
+    private static let createdAtFormatterWithFractionalSeconds: ISO8601DateFormatter = {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        return formatter
+    }()
+
+    private static let createdAtFormatter: ISO8601DateFormatter = {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime]
+        return formatter
+    }()
 }
 
 enum DeviceSyncStatus {

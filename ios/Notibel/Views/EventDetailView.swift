@@ -158,7 +158,11 @@ struct EventDetailLoaderView: View {
 
     private func loadEvent() async {
         guard appModel.isConfiguredForServer else {
-            state = .failed("Add the server URL and app token in Settings before opening notification details.")
+            if let fallbackEvent = reference.fallbackEvent {
+                state = .loaded(fallbackEvent)
+            } else {
+                state = .failed("Add the server URL and app token in Settings before opening notification details.")
+            }
             return
         }
 
@@ -175,7 +179,11 @@ struct EventDetailLoaderView: View {
         } catch is CancellationError {
             return
         } catch {
-            state = .failed(error.localizedDescription)
+            if let fallbackEvent = await resolveFallbackEvent() {
+                state = .loaded(fallbackEvent)
+            } else {
+                state = .failed(error.localizedDescription)
+            }
         }
     }
 
@@ -184,6 +192,22 @@ struct EventDetailLoaderView: View {
             return true
         }
         return false
+    }
+
+    private func resolveFallbackEvent() async -> NotibelEvent? {
+        if let topic = reference.topic {
+            do {
+                let events = try await appModel.fetchEvents(for: topic)
+                if let matchingEvent = events.first(where: { $0.id == reference.eventID }) {
+                    return matchingEvent
+                }
+            } catch is CancellationError {
+                return nil
+            } catch {
+            }
+        }
+
+        return reference.fallbackEvent
     }
 }
 

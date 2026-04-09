@@ -98,6 +98,7 @@ struct NotibelEvent: Codable, Hashable, Identifiable, Sendable {
 struct NotibelEventReference: Hashable, Sendable {
     let eventID: String
     let topic: String?
+    let fallbackEvent: NotibelEvent?
 }
 
 struct TopicEventsResponse: Codable, Sendable {
