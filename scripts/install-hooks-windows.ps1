@@ -3,7 +3,7 @@ param(
     [string]$ServerUrl,
     [Parameter(Mandatory = $true)]
     [string]$BitwardenProjectId,
-    [string]$RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path,
+    [string]$RepoRoot = "",
     [string]$ClaudeSettings = (Join-Path $HOME ".claude\settings.json"),
     [string]$CodexConfig = (Join-Path $HOME ".codex\config.toml"),
     [string]$ConfigFile = (Join-Path $HOME ".config\notibel\config.env")
@@ -11,11 +11,92 @@ param(
 
 $ErrorActionPreference = "Stop"
 
+if (-not $RepoRoot) {
+    $RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
+}
+
 function Update-ClaudeSettings {
     param(
         [string]$Path,
         [string]$Command
     )
+
+    function Test-IsLegacyClaudeCommand {
+        param([string]$Current)
+
+        return (
+            $Current -eq $Command -or
+            $Current -like "*ai-notifications*notify*" -or
+            $Current -like "*notibel*notify.sh*" -or
+            $Current -like "*notibel*notify.ps1*" -or
+            $Current -like "*notibel*claude-notify*" -or
+            $Current -like "*notibel*claude-notify.cmd*" -or
+            $Current -like "*notibel*claude-notify.ps1*"
+        )
+    }
+
+    function Set-ClaudeCommandHook {
+        param(
+            [psobject]$HooksObject,
+            [string]$EventName
+        )
+
+        $entries = @()
+        $property = $HooksObject.PSObject.Properties[$EventName]
+        if ($null -ne $property) {
+            $entries = @($property.Value)
+        } else {
+            $HooksObject | Add-Member -NotePropertyName $EventName -NotePropertyValue @()
+        }
+
+        $updatedEntries = @()
+        $hasDesired = $false
+
+        foreach ($entry in $entries) {
+            if ($null -eq $entry.hooks) {
+                $updatedEntries += $entry
+                continue
+            }
+
+            $newHooks = @()
+            foreach ($hook in @($entry.hooks)) {
+                if ($hook.type -ne "command") {
+                    $newHooks += $hook
+                    continue
+                }
+
+                $current = [string]$hook.command
+                if (Test-IsLegacyClaudeCommand -Current $current) {
+                    if (-not $hasDesired) {
+                        $hook.command = $Command
+                        $hasDesired = $true
+                        $newHooks += $hook
+                    }
+                } else {
+                    $newHooks += $hook
+                }
+            }
+
+            if ($newHooks.Count -gt 0) {
+                $entry.hooks = $newHooks
+                $updatedEntries += $entry
+            }
+        }
+
+        if (-not $hasDesired) {
+            $updatedEntries += [pscustomobject]@{
+                matcher = ""
+                hooks = @(
+                    [pscustomobject]@{
+                        type = "command"
+                        command = $Command
+                    }
+                )
+            }
+        }
+
+        $HooksObject.$EventName = @($updatedEntries)
+    }
 
     if (Test-Path -LiteralPath $Path) {
         $data = Get-Content -LiteralPath $Path -Raw | ConvertFrom-Json
@@ -26,37 +107,8 @@ function Update-ClaudeSettings {
     if ($null -eq $data.hooks) {
         $data | Add-Member -NotePropertyName hooks -NotePropertyValue ([pscustomobject]@{})
     }
-    if ($null -eq $data.hooks.Stop) {
-        $data.hooks | Add-Member -NotePropertyName Stop -NotePropertyValue @()
-    }
-
-    $updated = $false
-    foreach ($entry in $data.hooks.Stop) {
-        if ($null -eq $entry.hooks) {
-            continue
-        }
-        foreach ($hook in $entry.hooks) {
-            if ($hook.type -ne "command") {
-                continue
-            }
-            $current = [string]$hook.command
-            if ($current -eq $Command -or $current -like "*ai-notifications*notify*" -or $current -like "*notibel*claude-notify*") {
-                $hook.command = $Command
-                $updated = $true
-            }
-        }
-    }
-
-    if (-not $updated) {
-        $data.hooks.Stop += [pscustomobject]@{
-            hooks = @(
-                [pscustomobject]@{
-                    type = "command"
-                    command = $Command
-                }
-            )
-        }
-    }
+    Set-ClaudeCommandHook -HooksObject $data.hooks -EventName "Stop"
+    Set-ClaudeCommandHook -HooksObject $data.hooks -EventName "StopFailure"
 
     $dir = Split-Path -Parent $Path
     if ($dir) {
@@ -72,7 +124,20 @@ function Update-CodexConfig {
         [string]$CommandPath
     )
 
-    $notifyLine = "notify = [`"$CommandPath`"]"
+    $notifyParts = @(
+        "powershell.exe",
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        $CommandPath
+    )
+    $quotedNotifyParts = @(
+        foreach ($part in $notifyParts) {
+            "'" + ($part -replace "'", "''") + "'"
+        }
+    )
+    $notifyLine = "notify = [" + ($quotedNotifyParts -join ", ") + "]"
     $content = if (Test-Path -LiteralPath $Path) { Get-Content -LiteralPath $Path -Raw } else { "" }
 
     if ($content -match '(?m)^notify\s*=.*$') {
@@ -137,7 +202,7 @@ function Update-NotibelConfig {
 }
 
 $claudeCommand = (Join-Path $RepoRoot "claude-notify.cmd")
-$codexCommand = (Join-Path $RepoRoot "codex-notify.cmd")
+$codexCommand = (Join-Path $RepoRoot "codex-notify.ps1")
 
 Update-ClaudeSettings -Path $ClaudeSettings -Command $claudeCommand
 Update-CodexConfig -Path $CodexConfig -CommandPath $codexCommand

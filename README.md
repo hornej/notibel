@@ -232,11 +232,9 @@ This updates:
 The Windows wrappers are:
 
 - `claude-notify.cmd`
-- `codex-notify.cmd`
-
-Those wrappers invoke the PowerShell publishers in this repo.
 
 Because Codex hooks are currently disabled on Windows, the Windows installer still uses Codex's legacy `notify = [...]` integration.
+On Windows that legacy Codex config points directly to `powershell.exe ... codex-notify.ps1` so the JSON payload survives intact.
 
 ## Manual Publisher Tests
 

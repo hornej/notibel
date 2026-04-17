@@ -114,5 +114,7 @@ if ($HookInput) {
 }
 
 $publishScript = Join-Path $PSScriptRoot "notify.ps1"
-& $publishScript -Title $Title -Message $Message -Source "claude-code" -Topic "claude"
+$computerName = if ($env:COMPUTERNAME) { [string]$env:COMPUTERNAME } else { "windows" }
+$source = "claude code on $computerName"
+& $publishScript -Title $Title -Message $Message -Source $source -Topic "claude"
 exit $LASTEXITCODE
