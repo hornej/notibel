@@ -1,6 +1,11 @@
 package store
 
 import (
+	"io"
+	"log"
+	"os"
+	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 )
@@ -8,7 +13,7 @@ import (
 func TestUpsertDeviceNormalizesTopics(t *testing.T) {
 	t.Parallel()
 
-	db, err := New(t.TempDir() + "/store.json")
+	db, err := New(t.TempDir()+"/store.json", log.New(io.Discard, "", 0))
 	if err != nil {
 		t.Fatalf("new store: %v", err)
 	}
@@ -33,7 +38,7 @@ func TestUpsertDeviceNormalizesTopics(t *testing.T) {
 func TestAddEventPrunesOldEntries(t *testing.T) {
 	t.Parallel()
 
-	db, err := New(t.TempDir() + "/store.json")
+	db, err := New(t.TempDir()+"/store.json", log.New(io.Discard, "", 0))
 	if err != nil {
 		t.Fatalf("new store: %v", err)
 	}
@@ -62,7 +67,7 @@ func TestAddEventPrunesOldEntries(t *testing.T) {
 func TestEventByIDReturnsMatchingEvent(t *testing.T) {
 	t.Parallel()
 
-	db, err := New(t.TempDir() + "/store.json")
+	db, err := New(t.TempDir()+"/store.json", log.New(io.Discard, "", 0))
 	if err != nil {
 		t.Fatalf("new store: %v", err)
 	}
@@ -83,5 +88,41 @@ func TestEventByIDReturnsMatchingEvent(t *testing.T) {
 	}
 	if got.ID != newerEvent.ID || got.Topic != newerEvent.Topic {
 		t.Fatalf("EventByID() = %#v, want %#v", got, newerEvent)
+	}
+}
+
+func TestNewRecoversFromCorruptStore(t *testing.T) {
+	t.Parallel()
+
+	tempDir := t.TempDir()
+	storePath := filepath.Join(tempDir, "store.json")
+	if err := os.WriteFile(storePath, []byte(`{"devices":`), 0o600); err != nil {
+		t.Fatalf("write corrupt store: %v", err)
+	}
+
+	db, err := New(storePath, log.New(io.Discard, "", 0))
+	if err != nil {
+		t.Fatalf("new store: %v", err)
+	}
+
+	stats := db.Stats()
+	if stats.DeviceCount != 0 || stats.EventCount != 0 {
+		t.Fatalf("stats = %#v, want empty store", stats)
+	}
+
+	archivedEntries, err := filepath.Glob(storePath + ".corrupt-*")
+	if err != nil {
+		t.Fatalf("glob corrupt stores: %v", err)
+	}
+	if len(archivedEntries) != 1 {
+		t.Fatalf("corrupt archive count = %d, want 1", len(archivedEntries))
+	}
+
+	contents, err := os.ReadFile(storePath)
+	if err != nil {
+		t.Fatalf("read recovered store: %v", err)
+	}
+	if strings.Contains(string(contents), `{"devices":`) && !strings.Contains(string(contents), `"devices": {}`) {
+		t.Fatalf("store contents were not reset: %s", contents)
 	}
 }

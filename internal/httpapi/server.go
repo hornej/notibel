@@ -3,11 +3,14 @@ package httpapi
 import (
 	"crypto/subtle"
 	"encoding/json"
+	"errors"
+	"io"
 	"log"
 	"net/http"
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/hornej/notibel/internal/config"
 	"github.com/hornej/notibel/internal/notifier"
@@ -18,6 +21,12 @@ var (
 	topicPattern        = regexp.MustCompile(`^[A-Za-z0-9._-]{1,64}$`)
 	eventPattern        = regexp.MustCompile(`^[A-Za-z0-9._-]{1,128}$`)
 	installationPattern = regexp.MustCompile(`^[A-Za-z0-9._-]{1,128}$`)
+)
+
+const (
+	maxPublishBodyBytes = 1 << 20
+	maxDeviceBodyBytes  = 32 << 10
+	maxTopicsPerDevice  = 32
 )
 
 type Server struct {
@@ -50,9 +59,13 @@ func (s *Server) handleHealth(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	stats := s.store.Stats()
 	writeJSON(w, http.StatusOK, map[string]any{
 		"ok":             true,
 		"apnsConfigured": s.cfg.HasAPNS(),
+		"deviceCount":    stats.DeviceCount,
+		"eventCount":     stats.EventCount,
+		"eventLimit":     s.cfg.EventLimit,
 	})
 }
 
@@ -73,14 +86,21 @@ func (s *Server) handlePublish(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var req notifier.PublishRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		writeError(w, http.StatusBadRequest, "invalid json body")
+	if err := decodeJSONBody(w, r, &req, maxPublishBodyBytes); err != nil {
+		writeDecodeError(w, err)
 		return
 	}
 
 	result, err := s.service.Publish(r.Context(), topic, req)
 	if err != nil {
-		writeError(w, http.StatusBadRequest, err.Error())
+		var validationErr *notifier.ValidationError
+		if errors.As(err, &validationErr) {
+			writeError(w, http.StatusBadRequest, validationErr.Error())
+			return
+		}
+
+		s.logger.Printf("publish failed for topic %s: %v", topic, err)
+		writeError(w, http.StatusInternalServerError, "failed to publish event")
 		return
 	}
 
@@ -186,16 +206,16 @@ func (s *Server) handleUpsertDevice(w http.ResponseWriter, r *http.Request, inst
 		Name        string   `json:"name"`
 	}
 
-	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
-		writeError(w, http.StatusBadRequest, "invalid json body")
+	if err := decodeJSONBody(w, r, &payload, maxDeviceBodyBytes); err != nil {
+		writeDecodeError(w, err)
 		return
 	}
 	if strings.TrimSpace(payload.DeviceToken) == "" {
 		writeError(w, http.StatusBadRequest, "deviceToken is required")
 		return
 	}
-	if len(payload.Topics) == 0 {
-		writeError(w, http.StatusBadRequest, "topics must not be empty")
+	if err := validateTopics(payload.Topics); err != nil {
+		writeError(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
@@ -215,8 +235,22 @@ func (s *Server) handleUpsertDevice(w http.ResponseWriter, r *http.Request, inst
 
 func (s *Server) logRequests(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		s.logger.Printf("%s %s", r.Method, r.URL.Path)
-		next.ServeHTTP(w, r)
+		startedAt := time.Now()
+		loggedWriter := &loggingResponseWriter{
+			ResponseWriter: w,
+			status:         http.StatusOK,
+		}
+
+		next.ServeHTTP(loggedWriter, r)
+
+		s.logger.Printf(
+			"%s %s status=%d bytes=%d duration=%s",
+			r.Method,
+			r.URL.Path,
+			loggedWriter.status,
+			loggedWriter.bytes,
+			time.Since(startedAt).Round(time.Millisecond),
+		)
 	})
 }
 
@@ -263,7 +297,80 @@ func eventIDFromPath(path string) (string, bool) {
 	return trimmed, true
 }
 
+type loggingResponseWriter struct {
+	http.ResponseWriter
+	status int
+	bytes  int
+}
+
+func (w *loggingResponseWriter) WriteHeader(status int) {
+	w.status = status
+	w.ResponseWriter.WriteHeader(status)
+}
+
+func (w *loggingResponseWriter) Write(payload []byte) (int, error) {
+	if w.status == 0 {
+		w.status = http.StatusOK
+	}
+
+	written, err := w.ResponseWriter.Write(payload)
+	w.bytes += written
+	return written, err
+}
+
+func decodeJSONBody(w http.ResponseWriter, r *http.Request, destination any, maxBytes int64) error {
+	if r.Body == nil {
+		return errors.New("missing request body")
+	}
+
+	r.Body = http.MaxBytesReader(w, r.Body, maxBytes)
+
+	decoder := json.NewDecoder(r.Body)
+	decoder.DisallowUnknownFields()
+
+	if err := decoder.Decode(destination); err != nil {
+		return err
+	}
+
+	if err := decoder.Decode(&struct{}{}); err != io.EOF {
+		if err == nil {
+			return errors.New("body must contain a single json object")
+		}
+		return err
+	}
+
+	return nil
+}
+
+func writeDecodeError(w http.ResponseWriter, err error) {
+	var maxBytesError *http.MaxBytesError
+	if errors.As(err, &maxBytesError) {
+		writeError(w, http.StatusRequestEntityTooLarge, "request body too large")
+		return
+	}
+
+	writeError(w, http.StatusBadRequest, "invalid json body")
+}
+
+func validateTopics(topics []string) error {
+	if len(topics) == 0 {
+		return errors.New("topics must not be empty")
+	}
+	if len(topics) > maxTopicsPerDevice {
+		return errors.New("too many topics")
+	}
+
+	for _, topic := range topics {
+		if !validTopic(topic) {
+			return errors.New("invalid topic")
+		}
+	}
+
+	return nil
+}
+
 func writeJSON(w http.ResponseWriter, status int, payload any) {
+	w.Header().Set("X-Content-Type-Options", "nosniff")
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
 	_ = json.NewEncoder(w).Encode(payload)

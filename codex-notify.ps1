@@ -33,7 +33,9 @@ if (-not $stopHook -and $eventType -ne "agent-turn-complete" -and $eventType -ne
 }
 
 $title = "Codex"
-$message = if ($payload.'last-assistant-message') {
+$message = if ($payload.last_assistant_message) {
+    [string]$payload.last_assistant_message
+} elseif ($payload.'last-assistant-message') {
     [string]$payload.'last-assistant-message'
 } elseif ($payload.last_agent_message) {
     [string]$payload.last_agent_message

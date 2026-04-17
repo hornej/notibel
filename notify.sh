@@ -25,6 +25,7 @@ fi
 TITLE="${1:-Claude Code}"
 MESSAGE="${2:-Response complete}"
 SOURCE="claude-code"
+HOST_NAME=""
 
 extract_text_content() {
     jq -r '
@@ -80,6 +81,17 @@ if [ -n "$HOOK_INPUT" ]; then
     elif [ -n "$STOP_REASON" ]; then
         MESSAGE="$STOP_REASON"
     fi
+fi
+
+if command -v scutil >/dev/null 2>&1; then
+    HOST_NAME=$(scutil --get ComputerName 2>/dev/null || true)
+fi
+if [ -z "$HOST_NAME" ]; then
+    HOST_NAME=$(hostname -s 2>/dev/null || hostname 2>/dev/null || true)
+fi
+HOST_NAME=$(echo "$HOST_NAME" | tr '\r\n' ' ' | sed -E 's/[[:space:]]+/ /g; s/^ //; s/ $//')
+if [ -n "$HOST_NAME" ]; then
+    SOURCE="claude-code on $HOST_NAME"
 fi
 
 load_publish_token_from_bitwarden() {

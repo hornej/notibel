@@ -179,8 +179,12 @@ $Payload = @{
     threadTitle = $ThreadTitle
 } | ConvertTo-Json -Compress
 
-Invoke-RestMethod `
-    -Method Post `
-    -Uri "$NotibelUrl/v1/publish/$NotibelTopic" `
-    -Headers $Headers `
-    -Body $Payload | Out-Null
+try {
+    Invoke-RestMethod `
+        -Method Post `
+        -Uri "$NotibelUrl/v1/publish/$NotibelTopic" `
+        -Headers $Headers `
+        -Body $Payload | Out-Null
+} catch {
+    [Console]::Error.WriteLine("Notibel publish failed: $($_.Exception.Message)")
+}

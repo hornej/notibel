@@ -34,9 +34,10 @@ The difference is iPhone delivery. If you want your own branded app, you need yo
 
 For a full setup you need:
 
-- Go 1.24+ to build the server
+- Go 1.20+ to build the server
 - Xcode to build and sign the iPhone app
 - `jq`, `curl`, `ssh`, and `scp`
+- `make` for the convenience targets in this repo
 - Bitwarden Secrets Manager plus the `bws` CLI
 - A Bitwarden machine access token stored locally
   - macOS: Keychain service `codex.bitwarden.secrets-manager`, account `default`
@@ -79,7 +80,7 @@ The bundle ID in Bitwarden must match the iPhone app you actually sign and insta
 Build the Linux ARM64 binary that the deployment script pushes to your host:
 
 ```bash
-./scripts/build-linux-arm64.sh
+make build-linux-arm64
 ```
 
 This writes:
@@ -143,6 +144,22 @@ Healthy APNs-enabled output looks like:
 
 Open `ios/Notibel.xcodeproj` in Xcode.
 
+Before the first device build on a machine, copy the local signing template and
+set your Apple team ID:
+
+```bash
+cp ios/Config/Local.xcconfig.example ios/Config/Local.xcconfig
+```
+
+Then edit `ios/Config/Local.xcconfig` and set:
+
+```xcconfig
+DEVELOPMENT_TEAM = YOUR_TEAM_ID
+```
+
+`ios/Config/Local.xcconfig` is ignored by git, so each machine can keep its own
+signing team without modifying the shared Xcode project.
+
 Then:
 
 1. Set your Apple team.
@@ -153,7 +170,21 @@ Then:
 You can also do a simulator-only compile check with:
 
 ```bash
-xcodebuild -project ios/Notibel.xcodeproj -scheme Notibel -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO build
+make ios-build-sim
+```
+
+## Local Checks
+
+Run the local checks that back the CI workflow:
+
+```bash
+make ci
+```
+
+On macOS, you can also include the iPhone simulator build:
+
+```bash
+make ios-build-sim
 ```
 
 ## Configure The iPhone App
@@ -165,6 +196,8 @@ In the app:
 3. Add the topics you care about, for example `codex` and `claude`.
 4. Request notification permission.
 5. Sync device registration.
+
+The iPhone app stores the app token in the device Keychain rather than in `UserDefaults`.
 
 Expected result:
 

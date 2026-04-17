@@ -1,4 +1,4 @@
-FROM golang:1.22-alpine AS build
+FROM golang:1.20-alpine AS build
 
 WORKDIR /src
 COPY go.mod go.sum ./
@@ -6,7 +6,7 @@ RUN go mod download
 
 COPY cmd ./cmd
 COPY internal ./internal
-RUN CGO_ENABLED=0 GOOS=linux go build -o /out/notibeld ./cmd/notibeld
+RUN CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" -o /out/notibeld ./cmd/notibeld
 
 FROM alpine:3.20
 

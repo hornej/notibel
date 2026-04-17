@@ -94,9 +94,9 @@ struct SettingsView: View {
         if hasSavedAppToken && !isReplacingAppToken {
             HStack(spacing: 12) {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("App token saved")
+                    Text("App token saved in Keychain")
                         .foregroundStyle(.primary)
-                    Text("Enter a new token to replace it.")
+                    Text("Enter a new token to replace the secure copy.")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }

@@ -13,6 +13,14 @@ import (
 	"github.com/hornej/notibel/internal/store"
 )
 
+type ValidationError struct {
+	message string
+}
+
+func (e *ValidationError) Error() string {
+	return e.message
+}
+
 type PublishRequest struct {
 	Title       string `json:"title"`
 	Message     string `json:"message"`
@@ -47,7 +55,7 @@ func New(store *store.Store, apnsClient apns.Client, logger *log.Logger, eventLi
 func (s *Service) Publish(ctx context.Context, topic string, req PublishRequest) (PublishResult, error) {
 	message := strings.TrimSpace(req.Message)
 	if message == "" {
-		return PublishResult{}, errors.New("message is required")
+		return PublishResult{}, &ValidationError{message: "message is required"}
 	}
 
 	title := strings.TrimSpace(req.Title)

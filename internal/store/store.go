@@ -3,6 +3,8 @@ package store
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 	"sort"
@@ -35,19 +37,26 @@ type snapshot struct {
 	Events  []Event                       `json:"events"`
 }
 
-type Store struct {
-	mu    sync.RWMutex
-	path  string
-	state snapshot
+type Stats struct {
+	DeviceCount int `json:"deviceCount"`
+	EventCount  int `json:"eventCount"`
 }
 
-func New(path string) (*Store, error) {
+type Store struct {
+	mu     sync.RWMutex
+	path   string
+	logger *log.Logger
+	state  snapshot
+}
+
+func New(path string, logger *log.Logger) (*Store, error) {
 	if strings.TrimSpace(path) == "" {
 		return nil, errors.New("store path is required")
 	}
 
 	s := &Store{
-		path: path,
+		path:   path,
+		logger: logger,
 		state: snapshot{
 			Devices: map[string]DeviceRegistration{},
 			Events:  []Event{},
@@ -162,6 +171,16 @@ func (s *Store) EventByID(eventID string) (Event, bool) {
 	return Event{}, false
 }
 
+func (s *Store) Stats() Stats {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	return Stats{
+		DeviceCount: len(s.state.Devices),
+		EventCount:  len(s.state.Events),
+	}
+}
+
 func (s *Store) load() error {
 	data, err := os.ReadFile(s.path)
 	if err != nil {
@@ -177,7 +196,7 @@ func (s *Store) load() error {
 
 	var loaded snapshot
 	if err := json.Unmarshal(data, &loaded); err != nil {
-		return err
+		return s.recoverCorruptStore(data, err)
 	}
 	if loaded.Devices == nil {
 		loaded.Devices = map[string]DeviceRegistration{}
@@ -188,6 +207,21 @@ func (s *Store) load() error {
 
 	s.state = loaded
 	return nil
+}
+
+func (s *Store) recoverCorruptStore(data []byte, cause error) error {
+	corruptPath := fmt.Sprintf("%s.corrupt-%s", s.path, time.Now().UTC().Format("20060102150405"))
+	if writeErr := os.WriteFile(corruptPath, data, 0o600); writeErr != nil {
+		s.logf("store at %s is corrupt (%v); failed to archive corrupt contents: %v", s.path, cause, writeErr)
+	} else {
+		s.logf("store at %s is corrupt (%v); archived corrupt contents to %s and reset the store", s.path, cause, corruptPath)
+	}
+
+	s.state = snapshot{
+		Devices: map[string]DeviceRegistration{},
+		Events:  []Event{},
+	}
+	return s.persistSnapshot(s.state)
 }
 
 func (s *Store) persistLocked() error {
@@ -230,4 +264,12 @@ func normalizeTopics(topics []string) []string {
 
 	sort.Strings(normalized)
 	return normalized
+}
+
+func (s *Store) logf(format string, args ...any) {
+	if s.logger == nil {
+		return
+	}
+
+	s.logger.Printf(format, args...)
 }

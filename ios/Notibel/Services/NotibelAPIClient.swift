@@ -93,6 +93,7 @@ struct NotibelAPIClient: Sendable {
 
     private func authorizedRequest(url: URL) -> URLRequest {
         var request = URLRequest(url: url)
+        request.timeoutInterval = 15
         request.setValue("Bearer \(appToken)", forHTTPHeaderField: "Authorization")
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         return request

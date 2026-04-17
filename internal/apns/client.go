@@ -141,11 +141,19 @@ func (c *PushClient) Send(ctx context.Context, deviceToken string, event store.E
 		return nil
 	}
 
-	switch response.Reason {
-	case "BadDeviceToken", "Unregistered":
+	if isUnregisteredReason(response.Reason) {
 		return &ErrUnregistered{Reason: response.Reason}
 	}
 
 	c.logger.Printf("apns returned status=%d reason=%s apns-id=%s", response.StatusCode, response.Reason, response.ApnsID)
 	return fmt.Errorf("apns returned status %d: %s", response.StatusCode, response.Reason)
+}
+
+func isUnregisteredReason(reason string) bool {
+	switch reason {
+	case "BadDeviceToken", "DeviceTokenNotForTopic", "Unregistered":
+		return true
+	default:
+		return false
+	}
 }

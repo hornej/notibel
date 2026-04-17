@@ -6,6 +6,7 @@ secrets/
 __pycache__/
 dist/
 DerivedData/
+ios/Config/Local.xcconfig
 *.xcuserstate
 xcuserdata/
 **/xcuserdata/

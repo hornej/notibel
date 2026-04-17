@@ -1,0 +1,4 @@
+#include? "Local.xcconfig"
+
+// Shared Xcode settings for this repo. Keep machine-specific signing in
+// Config/Local.xcconfig so local device builds work without modifying the project.

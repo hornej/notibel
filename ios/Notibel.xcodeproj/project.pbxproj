@@ -39,6 +39,8 @@
 		2229483CF6D82FC207456737 /* AppModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppModel.swift; sourceTree = "<group>"; };
 		26E0324E117B576F7EDB52EF /* TopicDetailView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TopicDetailView.swift; sourceTree = "<group>"; };
 		2EACE2DCCFB8D5F1A103A144 /* Notibel.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Notibel.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		2F4B90248F7D4B4D8C3A4102 /* Shared.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Shared.xcconfig; sourceTree = "<group>"; };
+		2F4B90248F7D4B4D8C3A4103 /* Local.xcconfig.example */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Local.xcconfig.example; sourceTree = "<group>"; };
 		30300A12C5BF14049B50F9B8 /* SettingsView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		3920908F35A2305D4361C67F /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS14.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
 		394C812D8A7B870993B18512 /* AddTopicSheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AddTopicSheet.swift; sourceTree = "<group>"; };
@@ -88,6 +90,15 @@
 			name = iOS;
 			sourceTree = "<group>";
 		};
+		2F4B90248F7D4B4D8C3A4101 /* Config */ = {
+			isa = PBXGroup;
+			children = (
+				2F4B90248F7D4B4D8C3A4102 /* Shared.xcconfig */,
+				2F4B90248F7D4B4D8C3A4103 /* Local.xcconfig.example */,
+			);
+			path = Config;
+			sourceTree = "<group>";
+		};
 		3E5E6C4D2EFC10CC7EB56B30 /* Services */ = {
 			isa = PBXGroup;
 			children = (
@@ -112,6 +123,7 @@
 			children = (
 				0ADCA35E554551E1909DE624 /* Products */,
 				D48A281D9C486AD5E7A8E2CA /* Frameworks */,
+				2F4B90248F7D4B4D8C3A4101 /* Config */,
 				A139EDF0216D946794D055F6 /* Notibel */,
 			);
 			sourceTree = "<group>";
@@ -275,8 +287,9 @@
 /* Begin XCBuildConfiguration section */
 		122874F64893753486AF4F18 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 2F4B90248F7D4B4D8C3A4102 /* Shared.xcconfig */;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = "";
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CLANG_ENABLE_OBJC_WEAK = NO;
 				CODE_SIGN_ENTITLEMENTS = Notibel/Notibel.entitlements;
@@ -304,8 +317,9 @@
 		};
 		804C98A8BDACB17DBE97C3FE /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 2F4B90248F7D4B4D8C3A4102 /* Shared.xcconfig */;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = "";
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CLANG_ENABLE_OBJC_WEAK = NO;
 				CODE_SIGN_ENTITLEMENTS = Notibel/Notibel.entitlements;
@@ -332,6 +346,7 @@
 		};
 		9708CFCEBC9E7A898E794EC0 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 2F4B90248F7D4B4D8C3A4102 /* Shared.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
@@ -390,6 +405,7 @@
 		};
 		BF80FE4793100B0F2468C74B /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 2F4B90248F7D4B4D8C3A4102 /* Shared.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;

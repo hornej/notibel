@@ -37,3 +37,17 @@ func TestAlertBodyFallsBackForBlankMessages(t *testing.T) {
 		t.Fatal("alertBody() returned an empty string for a blank message")
 	}
 }
+
+func TestIsUnregisteredReason(t *testing.T) {
+	t.Parallel()
+
+	for _, reason := range []string{"BadDeviceToken", "DeviceTokenNotForTopic", "Unregistered"} {
+		if !isUnregisteredReason(reason) {
+			t.Fatalf("isUnregisteredReason(%q) = false, want true", reason)
+		}
+	}
+
+	if isUnregisteredReason("PayloadTooLarge") {
+		t.Fatal(`isUnregisteredReason("PayloadTooLarge") = true, want false`)
+	}
+}
