@@ -17,6 +17,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--claude-settings", default=str(Path.home() / ".claude" / "settings.json"))
     parser.add_argument("--codex-config", default=str(Path.home() / ".codex" / "config.toml"))
     parser.add_argument("--codex-hooks", default=str(Path.home() / ".codex" / "hooks.json"))
+    parser.add_argument("--codex-global-state", default=str(Path.home() / ".codex" / ".codex-global-state.json"))
     parser.add_argument("--config-file", default=str(Path.home() / ".config" / "notibel" / "config.env"))
     return parser.parse_args()
 
@@ -149,6 +150,18 @@ def update_notibel_config(path: Path, server_url: str, project_id: str) -> None:
     path.write_text("".join(f"{key}={value}\n" for key, value in sorted(existing.items())))
 
 
+def update_codex_global_state(path: Path) -> None:
+    if path.exists():
+        data = json.loads(path.read_text())
+    else:
+        data = {}
+
+    data["notifications-turn-mode"] = "off"
+
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(data, indent=2) + "\n")
+
+
 def main() -> int:
     args = parse_args()
     repo_root = Path(args.repo_root).resolve()
@@ -156,11 +169,13 @@ def main() -> int:
     update_claude_settings(Path(args.claude_settings).expanduser(), str(repo_root / "notify.sh"))
     update_codex_config(Path(args.codex_config).expanduser())
     update_codex_hooks(Path(args.codex_hooks).expanduser(), str(repo_root / "codex-notify.sh"))
+    update_codex_global_state(Path(args.codex_global_state).expanduser())
     update_notibel_config(Path(args.config_file).expanduser(), args.server_url, args.bitwarden_project_id)
 
     print(f"Updated Claude settings: {Path(args.claude_settings).expanduser()}")
     print(f"Updated Codex config: {Path(args.codex_config).expanduser()}")
     print(f"Updated Codex hooks: {Path(args.codex_hooks).expanduser()}")
+    print(f"Updated Codex global state: {Path(args.codex_global_state).expanduser()}")
     print(f"Wrote Notibel config: {Path(args.config_file).expanduser()}")
     return 0
 
