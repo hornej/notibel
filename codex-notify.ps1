@@ -108,6 +108,71 @@ $threadTitle = if ($rootPayload.thread_title) {
 $computerName = if ($env:COMPUTERNAME) { [string]$env:COMPUTERNAME } else { "windows" }
 $source = "codex on $computerName"
 
+function Test-IsInternalMetadataMessage {
+    param(
+        [string]$Message
+    )
+
+    if (-not $Message) {
+        return $false
+    }
+
+    try {
+        $candidate = $Message | ConvertFrom-Json -ErrorAction Stop
+    } catch {
+        return $false
+    }
+
+    if ($candidate -isnot [System.Management.Automation.PSCustomObject] -and $candidate -isnot [hashtable]) {
+        return $false
+    }
+
+    $props = @($candidate.PSObject.Properties.Name)
+    if ($props.Count -eq 0) {
+        return $false
+    }
+
+    foreach ($prop in $props) {
+        if (@("title", "suggestions", "exclude", "description", "reason") -notcontains $prop) {
+            return $false
+        }
+    }
+
+    if ($props.Count -eq 1 -and $props[0] -eq "title" -and $candidate.title -is [string]) {
+        return $true
+    }
+
+    if ($props.Count -eq 1 -and $props[0] -eq "exclude") {
+        return $true
+    }
+
+    if ($props.Count -eq 1 -and $props[0] -eq "suggestions") {
+        if ($candidate.suggestions -isnot [System.Collections.IEnumerable] -or $candidate.suggestions -is [string]) {
+            return $false
+        }
+
+        foreach ($item in $candidate.suggestions) {
+            if ($item -isnot [System.Management.Automation.PSCustomObject] -and $item -isnot [hashtable]) {
+                return $false
+            }
+
+            foreach ($name in @($item.PSObject.Properties.Name)) {
+                if (@("id", "title", "description", "reason") -notcontains $name) {
+                    return $false
+                }
+            }
+        }
+
+        return $true
+    }
+
+    return $false
+}
+
+if (Test-IsInternalMetadataMessage -Message $message) {
+    exit 0
+}
+
 $publishScript = Join-Path $PSScriptRoot "notify.ps1"
 & $publishScript -Title $title -Message $message -Source $source -Project $project -ThreadTitle $threadTitle -Topic "codex"
 exit $LASTEXITCODE

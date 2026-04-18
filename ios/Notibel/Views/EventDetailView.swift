@@ -70,7 +70,7 @@ struct EventDetailView: View {
             }
             .buttonStyle(.plain)
 
-            if let source = event.source, !source.isEmpty {
+            if let source = event.displaySource {
                 metadataRow(label: "Source", value: source, systemImage: "desktopcomputer")
             }
 

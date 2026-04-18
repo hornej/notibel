@@ -81,6 +81,39 @@ if [ -n "$LAST_MSG" ]; then
     MESSAGE="$LAST_MSG"
 fi
 
+is_internal_metadata_message() {
+    local message="$1"
+    [ -n "$message" ] || return 1
+
+    printf '%s' "$message" | jq -e '
+        type == "object"
+        and (
+            [keys_unsorted[] | select(. != "title" and . != "suggestions" and . != "exclude" and . != "description" and . != "reason")]
+            | length
+        ) == 0
+        and (
+            (keys_unsorted == ["title"] and (.title | type == "string"))
+            or
+            (keys_unsorted == ["exclude"] and ((.exclude | type) == "string" or (.exclude | type) == "array" or (.exclude | type) == "object"))
+            or
+            (
+                keys_unsorted == ["suggestions"]
+                and (.suggestions | type == "array")
+                and (
+                    [.suggestions[]? | type == "object"
+                        and ([keys_unsorted[] | select(. != "id" and . != "title" and . != "description" and . != "reason")] | length == 0)
+                    ]
+                    | all
+                )
+            )
+        )
+    ' >/dev/null 2>&1
+}
+
+if is_internal_metadata_message "$MESSAGE"; then
+    exit 0
+fi
+
 load_publish_token_from_bitwarden() {
     [ -n "$NOTIBEL_PUBLISH_TOKEN" ] && return 0
     [ -n "$NOTIBEL_BWS_PROJECT_ID" ] || return 0

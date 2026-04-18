@@ -22,23 +22,9 @@ struct EventRowView: View {
                 .lineLimit(isAccessibilityLayout ? 8 : 6)
                 .multilineTextAlignment(.leading)
 
-            Group {
-                if isAccessibilityLayout {
-                    VStack(alignment: .leading, spacing: 4) {
-                        ForEach(metadataItems, id: \.label) { item in
-                            metadataLabel(text: item.label, systemImage: item.systemImage)
-                        }
-                    }
-                } else {
-                    HStack(spacing: 12) {
-                        ForEach(metadataItems, id: \.label) { item in
-                            metadataLabel(text: item.label, systemImage: item.systemImage)
-                        }
-                    }
-                }
-            }
-            .font(.caption)
-            .foregroundStyle(.secondary)
+            metadataSection
+                .font(.caption)
+                .foregroundStyle(.secondary)
         }
         .padding(.vertical, 6)
     }
@@ -72,22 +58,36 @@ struct EventRowView: View {
             .foregroundStyle(.secondary)
     }
 
-    private func metadataLabel(text: String, systemImage: String) -> some View {
-        Label(text, systemImage: systemImage)
-            .fixedSize(horizontal: false, vertical: true)
+    @ViewBuilder
+    private var metadataSection: some View {
+        if metadataItems.isEmpty {
+            EmptyView()
+        } else if isAccessibilityLayout {
+            MetadataStack(items: metadataItems)
+        } else {
+            ViewThatFits(in: .horizontal) {
+                MetadataRow(items: metadataItems)
+                    .fixedSize(horizontal: true, vertical: false)
+
+                MetadataSplitRow(items: metadataItems)
+                    .fixedSize(horizontal: true, vertical: false)
+
+                MetadataStack(items: metadataItems)
+            }
+        }
     }
 
-    private var metadataItems: [(label: String, systemImage: String)] {
-        var items: [(label: String, systemImage: String)] = [
-            (event.topic, "number")
+    private var metadataItems: [MetadataItem] {
+        var items: [MetadataItem] = [
+            MetadataItem(text: event.topic, systemImage: "number")
         ]
 
-        if let source = event.source, !source.isEmpty {
-            items.append((source, "desktopcomputer"))
+        if let source = event.displaySource {
+            items.append(MetadataItem(text: source, systemImage: "desktopcomputer"))
         }
 
         if let project = event.project, !project.isEmpty {
-            items.append((project, "folder"))
+            items.append(MetadataItem(text: project, systemImage: "folder"))
         }
 
         return items
@@ -102,4 +102,76 @@ struct EventRowView: View {
         formatter.unitsStyle = .short
         return formatter
     }()
+}
+
+private struct MetadataItem: Identifiable {
+    let text: String
+    let systemImage: String
+
+    var id: String {
+        "\(systemImage)-\(text)"
+    }
+}
+
+private struct MetadataRow: View {
+    let items: [MetadataItem]
+
+    var body: some View {
+        HStack(alignment: .firstTextBaseline, spacing: 8) {
+            ForEach(items) { item in
+                MetadataLabel(item: item)
+            }
+        }
+    }
+}
+
+private struct MetadataSplitRow: View {
+    let items: [MetadataItem]
+
+    var body: some View {
+        if secondaryItems.isEmpty {
+            MetadataRow(items: primaryItems)
+        } else {
+            VStack(alignment: .leading, spacing: 4) {
+                MetadataRow(items: primaryItems)
+                MetadataRow(items: secondaryItems)
+            }
+        }
+    }
+
+    private var primaryItems: [MetadataItem] {
+        Array(items.prefix(2))
+    }
+
+    private var secondaryItems: [MetadataItem] {
+        Array(items.dropFirst(2))
+    }
+}
+
+private struct MetadataStack: View {
+    let items: [MetadataItem]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            ForEach(items) { item in
+                MetadataLabel(item: item)
+            }
+        }
+    }
+}
+
+private struct MetadataLabel: View {
+    let item: MetadataItem
+
+    var body: some View {
+        HStack(alignment: .firstTextBaseline, spacing: 3) {
+            Image(systemName: item.systemImage)
+                .imageScale(.small)
+
+            Text(item.text)
+                .lineLimit(1)
+                .minimumScaleFactor(0.92)
+                .truncationMode(.tail)
+        }
+    }
 }

@@ -344,8 +344,10 @@ After that:
 - Codex turn-ended notifications call `codex-notify-fanout.sh`, which publishes to topic `codex`
 - both scripts fetch `NOTIBEL_PUBLISH_TOKEN` from Bitwarden automatically if it is not already exported
 - the macOS installer preserves any existing Codex `notify = [...]` command by chaining it through `codex-notify-fanout.sh`
+- the Codex publisher ignores internal title/suggestion metadata JSON so only user-facing completion text is pushed
 - the macOS installer disables `features.codex_hooks` and removes the old Notibel `Stop` hook so Codex only notifies once per completed turn
 - the macOS installer also sets Codex app completion notifications to `off` so the desktop app does not generate a second turn-finished alert alongside Notibel
+- if Codex has already wrapped `notify` through `SkyComputerUseClient --previous-notify`, the installer unwraps that app-generated layer instead of preserving it as a chained notifier
 
 If you are not using Bitwarden, you can still use the hook scripts. Set
 `NOTIBEL_URL` and `NOTIBEL_PUBLISH_TOKEN` in `~/.config/notibel/config.env`

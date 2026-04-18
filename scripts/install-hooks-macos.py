@@ -83,13 +83,45 @@ def is_notibel_codex_notify(command_parts: list[str]) -> bool:
     )
 
 
+def is_codex_app_notify(command_parts: list[str]) -> bool:
+    if len(command_parts) < 2:
+        return False
+
+    return "SkyComputerUseClient" in command_parts[0] and command_parts[1] == "turn-ended"
+
+
+def unwrap_codex_app_notify(command_parts: list[str] | None) -> list[str] | None:
+    if not command_parts or not is_codex_app_notify(command_parts):
+        return command_parts
+
+    for index, part in enumerate(command_parts[:-1]):
+        if part != "--previous-notify":
+            continue
+
+        try:
+            parsed = json.loads(command_parts[index + 1])
+        except json.JSONDecodeError:
+            return None
+
+        if isinstance(parsed, list) and all(isinstance(item, str) for item in parsed):
+            return parsed
+        return None
+
+    return None
+
+
 def update_codex_config(path: Path, command_parts: list[str]) -> list[str] | None:
     text = path.read_text() if path.exists() else ""
     chained_notify: list[str] | None = None
 
     existing_notify = extract_notify_parts(text)
-    if existing_notify and not is_notibel_codex_notify(existing_notify):
-        chained_notify = existing_notify
+    unwrapped_existing_notify = unwrap_codex_app_notify(existing_notify)
+    if (
+        unwrapped_existing_notify
+        and not is_notibel_codex_notify(unwrapped_existing_notify)
+        and not is_codex_app_notify(unwrapped_existing_notify)
+    ):
+        chained_notify = unwrapped_existing_notify
 
     notify_line = f"notify = {format_toml_string_list(command_parts)}"
     if re.search(r"(?m)^notify\s*=.*$", text):

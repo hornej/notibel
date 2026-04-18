@@ -16,6 +16,10 @@ struct NotibelEvent: Codable, Hashable, Identifiable, Sendable {
         Self.renderMessage(message)
     }
 
+    var displaySource: String? {
+        Self.displaySourceText(from: source)
+    }
+
     // SwiftUI's Text only reliably honors inline markdown from AttributedString.
     // Preserve Codex line breaks and render fenced code blocks as literal monospace text.
     private static func renderMessage(_ message: String) -> AttributedString {
@@ -92,6 +96,23 @@ struct NotibelEvent: Codable, Hashable, Identifiable, Sendable {
         }
 
         return .system(.body, design: .monospaced)
+    }
+
+    private static func displaySourceText(from source: String?) -> String? {
+        guard let trimmedSource = source?.trimmingCharacters(in: .whitespacesAndNewlines), !trimmedSource.isEmpty else {
+            return nil
+        }
+
+        for prefix in ["codex on ", "claude on "] {
+            guard let range = trimmedSource.range(of: prefix, options: [.caseInsensitive, .anchored]) else {
+                continue
+            }
+
+            let simplifiedSource = trimmedSource[range.upperBound...].trimmingCharacters(in: .whitespacesAndNewlines)
+            return simplifiedSource.isEmpty ? trimmedSource : simplifiedSource
+        }
+
+        return trimmedSource
     }
 }
 
