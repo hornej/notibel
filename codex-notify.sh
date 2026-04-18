@@ -86,9 +86,19 @@ is_internal_metadata_message() {
     [ -n "$message" ] || return 1
 
     printf '%s' "$message" | jq -e '
+        def allowed_suggestion_item_keys:
+            ["id", "title", "description", "prompt", "threadAction", "appIds", "status", "createdAtMs", "updatedAtMs", "reason"];
+
+        def is_known_suggestion_item:
+            type == "object"
+            and (
+                [keys_unsorted[] | select((allowed_suggestion_item_keys | index(.)) | not)]
+                | length
+            ) == 0;
+
         type == "object"
         and (
-            [keys_unsorted[] | select(. != "title" and . != "suggestions" and . != "exclude" and . != "description" and . != "reason")]
+            [keys_unsorted[] | select(. != "title" and . != "suggestions" and . != "exclude" and . != "description" and . != "reason" and . != "projectRoot" and . != "generatedAtMs" and . != "currentSuggestionIds")]
             | length
         ) == 0
         and (
@@ -97,12 +107,13 @@ is_internal_metadata_message() {
             (keys_unsorted == ["exclude"] and ((.exclude | type) == "string" or (.exclude | type) == "array" or (.exclude | type) == "object"))
             or
             (
-                keys_unsorted == ["suggestions"]
+                (.suggestions | type == "array")
+                and ((.projectRoot? | type) == "string" or .projectRoot? == null)
+                and ((.generatedAtMs? | type) == "number" or .generatedAtMs? == null)
+                and ((.currentSuggestionIds? | type) == "array" or .currentSuggestionIds? == null)
                 and (.suggestions | type == "array")
                 and (
-                    [.suggestions[]? | type == "object"
-                        and ([keys_unsorted[] | select(. != "id" and . != "title" and . != "description" and . != "reason")] | length == 0)
-                    ]
+                    [.suggestions[]? | is_known_suggestion_item]
                     | all
                 )
             )

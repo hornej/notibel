@@ -133,7 +133,7 @@ function Test-IsInternalMetadataMessage {
     }
 
     foreach ($prop in $props) {
-        if (@("title", "suggestions", "exclude", "description", "reason") -notcontains $prop) {
+        if (@("title", "suggestions", "exclude", "description", "reason", "projectRoot", "generatedAtMs", "currentSuggestionIds") -notcontains $prop) {
             return $false
         }
     }
@@ -146,9 +146,23 @@ function Test-IsInternalMetadataMessage {
         return $true
     }
 
-    if ($props.Count -eq 1 -and $props[0] -eq "suggestions") {
+    if ($props -contains "suggestions") {
         if ($candidate.suggestions -isnot [System.Collections.IEnumerable] -or $candidate.suggestions -is [string]) {
             return $false
+        }
+
+        if ($null -ne $candidate.projectRoot -and $candidate.projectRoot -isnot [string]) {
+            return $false
+        }
+
+        if ($null -ne $candidate.generatedAtMs -and $candidate.generatedAtMs -isnot [ValueType]) {
+            return $false
+        }
+
+        if ($null -ne $candidate.currentSuggestionIds) {
+            if ($candidate.currentSuggestionIds -isnot [System.Collections.IEnumerable] -or $candidate.currentSuggestionIds -is [string]) {
+                return $false
+            }
         }
 
         foreach ($item in $candidate.suggestions) {
@@ -157,7 +171,7 @@ function Test-IsInternalMetadataMessage {
             }
 
             foreach ($name in @($item.PSObject.Properties.Name)) {
-                if (@("id", "title", "description", "reason") -notcontains $name) {
+                if (@("id", "title", "description", "prompt", "threadAction", "appIds", "status", "createdAtMs", "updatedAtMs", "reason") -notcontains $name) {
                     return $false
                 }
             }
