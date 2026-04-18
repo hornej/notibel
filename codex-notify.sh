@@ -23,26 +23,27 @@ fi
 
 [ -n "$JSON_INPUT" ] || exit 0
 
-LEGACY_PAYLOAD=$(echo "$JSON_INPUT" | jq -c 'if .type == "event_msg" and (.payload | type == "object") then .payload else . end' 2>/dev/null)
-STOP_HOOK_EVENT=$(echo "$JSON_INPUT" | jq -r '.hook_event_name // empty' 2>/dev/null)
+EVENT_PAYLOAD=$(echo "$JSON_INPUT" | jq -c '
+    if .type == "event_msg" and (.payload | type == "object") then
+        .payload
+    elif (.payload | type? == "object") then
+        .payload
+    else
+        .
+    end
+' 2>/dev/null)
+[ -n "$EVENT_PAYLOAD" ] || exit 0
 
-if [ "$STOP_HOOK_EVENT" = "Stop" ]; then
-    EVENT_PAYLOAD="$JSON_INPUT"
-else
-    EVENT_PAYLOAD="$LEGACY_PAYLOAD"
-    [ -n "$EVENT_PAYLOAD" ] || exit 0
+NOTIFICATION_TYPE=$(echo "$EVENT_PAYLOAD" | jq -r '.type // empty' 2>/dev/null)
+case "$NOTIFICATION_TYPE" in
+    agent-turn-complete|task_complete)
+        ;;
+    *)
+        exit 0
+        ;;
+esac
 
-    NOTIFICATION_TYPE=$(echo "$EVENT_PAYLOAD" | jq -r '.type // empty' 2>/dev/null)
-    case "$NOTIFICATION_TYPE" in
-        agent-turn-complete|task_complete)
-            ;;
-        *)
-            exit 0
-            ;;
-    esac
-fi
-
-LAST_MSG=$(echo "$EVENT_PAYLOAD" | jq -r '.last_assistant_message // ."last-assistant-message" // .last_agent_message // empty' 2>/dev/null)
+LAST_MSG=$(echo "$EVENT_PAYLOAD" | jq -r '.last_agent_message // .last_assistant_message // ."last-assistant-message" // empty' 2>/dev/null)
 PROJECT_CWD=$(echo "$JSON_INPUT" | jq -r '.cwd // .workspace.cwd // .workspace_dir // .workspace.path // .project.root // .project.path // empty' 2>/dev/null)
 if [ -z "$PROJECT_CWD" ]; then
     PROJECT_CWD=$(echo "$EVENT_PAYLOAD" | jq -r '.cwd // .workspace.cwd // .workspace_dir // .workspace.path // .project.root // .project.path // empty' 2>/dev/null)

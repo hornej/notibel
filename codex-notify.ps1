@@ -17,28 +17,29 @@ try {
 }
 
 $rootPayload = $payload
-$stopHook = [string]$payload.hook_event_name -eq "Stop"
 if ([string]$payload.type -eq "event_msg" -and $null -ne $payload.payload) {
+    $payload = $payload.payload
+} elseif ($null -ne $payload.payload -and ($payload.payload -is [System.Management.Automation.PSCustomObject] -or $payload.payload -is [hashtable])) {
     $payload = $payload.payload
 }
 
 $payloadType = $payload.PSObject.Properties["type"]
-if (-not $stopHook -and $null -eq $payloadType) {
+if ($null -eq $payloadType) {
     exit 0
 }
 
 $eventType = [string]$payload.type
-if (-not $stopHook -and $eventType -ne "agent-turn-complete" -and $eventType -ne "task_complete") {
+if ($eventType -ne "agent-turn-complete" -and $eventType -ne "task_complete") {
     exit 0
 }
 
 $title = "Codex"
-$message = if ($payload.last_assistant_message) {
+$message = if ($payload.last_agent_message) {
+    [string]$payload.last_agent_message
+} elseif ($payload.last_assistant_message) {
     [string]$payload.last_assistant_message
 } elseif ($payload.'last-assistant-message') {
     [string]$payload.'last-assistant-message'
-} elseif ($payload.last_agent_message) {
-    [string]$payload.last_agent_message
 } else {
     "Task completed"
 }

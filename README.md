@@ -341,9 +341,10 @@ The generated config file stores:
 After that:
 
 - Claude Code stop hooks call `notify.sh` and publish to topic `claude` by default
-- Codex `Stop` hooks call `codex-notify.sh` and publish to topic `codex` by default
+- Codex turn-ended notifications call `codex-notify-fanout.sh`, which publishes to topic `codex`
 - both scripts fetch `NOTIBEL_PUBLISH_TOKEN` from Bitwarden automatically if it is not already exported
-- the macOS installer enables `features.codex_hooks = true` and removes the legacy `notify = [...]` entry so Codex only notifies once per completed turn
+- the macOS installer preserves any existing Codex `notify = [...]` command by chaining it through `codex-notify-fanout.sh`
+- the macOS installer disables `features.codex_hooks` and removes the old Notibel `Stop` hook so Codex only notifies once per completed turn
 - the macOS installer also sets Codex app completion notifications to `off` so the desktop app does not generate a second turn-finished alert alongside Notibel
 
 If you are not using Bitwarden, you can still use the hook scripts. Set

@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import argparse
+import ast
+import base64
 import json
 import re
 from pathlib import Path
@@ -51,10 +53,59 @@ def update_claude_settings(path: Path, command: str) -> None:
     path.write_text(json.dumps(data, indent=2) + "\n")
 
 
-def update_codex_config(path: Path) -> None:
-    text = path.read_text() if path.exists() else ""
+def format_toml_string_list(values: list[str]) -> str:
+    return "[" + ", ".join(json.dumps(value) for value in values) + "]"
 
-    text = re.sub(r"(?m)^notify\s*=.*(?:\n|$)", "", text)
+
+def extract_notify_parts(text: str) -> list[str] | None:
+    match = re.search(r"(?m)^notify\s*=\s*(\[[^\n]*\])\s*$", text)
+    if not match:
+        return None
+
+    try:
+        parsed = ast.literal_eval(match.group(1))
+    except (SyntaxError, ValueError):
+        return None
+
+    if not isinstance(parsed, list) or not all(isinstance(part, str) for part in parsed):
+        return None
+
+    return parsed
+
+
+def is_notibel_codex_notify(command_parts: list[str]) -> bool:
+    joined = " ".join(command_parts)
+    return (
+        "ai-notifications/codex-notify.sh" in joined
+        or "ai-notifications/codex-notify-fanout.sh" in joined
+        or "/notibel/codex-notify.sh" in joined
+        or "/notibel/codex-notify-fanout.sh" in joined
+    )
+
+
+def update_codex_config(path: Path, command_parts: list[str]) -> list[str] | None:
+    text = path.read_text() if path.exists() else ""
+    chained_notify: list[str] | None = None
+
+    existing_notify = extract_notify_parts(text)
+    if existing_notify and not is_notibel_codex_notify(existing_notify):
+        chained_notify = existing_notify
+
+    notify_line = f"notify = {format_toml_string_list(command_parts)}"
+    if re.search(r"(?m)^notify\s*=.*$", text):
+        text = re.sub(r"(?m)^notify\s*=.*$", notify_line, text, count=1)
+    elif text:
+        match = re.search(r"(?m)^model_reasoning_effort\s*=.*$", text)
+        if not match:
+            match = re.search(r"(?m)^model\s*=.*$", text)
+
+        if match:
+            insert_at = match.end()
+            text = text[:insert_at] + f"\n{notify_line}" + text[insert_at:]
+        else:
+            text = f"{notify_line}\n{text}"
+    else:
+        text = f"{notify_line}\n"
 
     features_pattern = re.compile(r"(?ms)(^\[features\]\s*\n)(.*?)(?=^\[|\Z)")
     match = features_pattern.search(text)
@@ -62,18 +113,18 @@ def update_codex_config(path: Path) -> None:
         header = match.group(1)
         body = match.group(2)
         if re.search(r"(?m)^codex_hooks\s*=.*$", body):
-            body = re.sub(r"(?m)^codex_hooks\s*=.*$", "codex_hooks = true", body, count=1)
+            body = re.sub(r"(?m)^codex_hooks\s*=.*$", "codex_hooks = false", body, count=1)
         else:
             if body and not body.endswith("\n"):
                 body += "\n"
-            body += "codex_hooks = true\n"
+            body += "codex_hooks = false\n"
         text = text[:match.start()] + header + body + text[match.end():]
     else:
         if text and not text.endswith("\n"):
             text += "\n"
         if text:
             text += "\n"
-        text += "[features]\ncodex_hooks = true\n"
+        text += "[features]\ncodex_hooks = false\n"
 
     text = re.sub(r"\n{3,}", "\n\n", text)
     text = text.lstrip("\n")
@@ -82,6 +133,7 @@ def update_codex_config(path: Path) -> None:
 
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(text)
+    return chained_notify
 
 
 def is_notibel_codex_hook(command: str, desired_command: str) -> bool:
@@ -92,46 +144,56 @@ def is_notibel_codex_hook(command: str, desired_command: str) -> bool:
     )
 
 
-def update_codex_hooks(path: Path, command: str) -> None:
-    if path.exists():
-        data = json.loads(path.read_text())
-    else:
-        data = {}
+def remove_notibel_codex_hooks(path: Path, command: str) -> None:
+    if not path.exists():
+        return
 
-    hooks = data.setdefault("hooks", {})
-    stop_entries = hooks.setdefault("Stop", [])
+    data = json.loads(path.read_text())
+    hooks = data.get("hooks")
+    if not isinstance(hooks, dict):
+        return
 
-    updated = False
+    stop_entries = hooks.get("Stop")
+    if not isinstance(stop_entries, list):
+        return
+
+    updated_entries = []
     for entry in stop_entries:
         hook_list = entry.get("hooks")
         if not isinstance(hook_list, list):
+            updated_entries.append(entry)
             continue
+
+        filtered_hooks = []
         for hook in hook_list:
             if hook.get("type") != "command":
+                filtered_hooks.append(hook)
                 continue
+
             current = str(hook.get("command", ""))
             if is_notibel_codex_hook(current, command):
-                hook["command"] = command
-                updated = True
+                continue
 
-    if not updated:
-        stop_entries.append(
-            {
-                "hooks": [
-                    {
-                        "type": "command",
-                        "command": command,
-                        "timeout": 30,
-                    }
-                ]
-            }
-        )
+            filtered_hooks.append(hook)
+
+        if filtered_hooks:
+            updated_entry = dict(entry)
+            updated_entry["hooks"] = filtered_hooks
+            updated_entries.append(updated_entry)
+
+    if updated_entries:
+        hooks["Stop"] = updated_entries
+    else:
+        hooks.pop("Stop", None)
+
+    if not hooks:
+        data.pop("hooks", None)
 
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(data, indent=2) + "\n")
 
 
-def update_notibel_config(path: Path, server_url: str, project_id: str) -> None:
+def update_notibel_config(path: Path, server_url: str, project_id: str, chained_notify: list[str] | None) -> None:
     existing: dict[str, str] = {}
     if path.exists():
         for line in path.read_text().splitlines():
@@ -145,6 +207,10 @@ def update_notibel_config(path: Path, server_url: str, project_id: str) -> None:
     existing["NOTIBEL_BWS_PROJECT_ID"] = project_id
     existing.setdefault("NOTIBEL_BWS_SERVICE", "codex.bitwarden.secrets-manager")
     existing.setdefault("NOTIBEL_BWS_ACCOUNT", "default")
+    if chained_notify:
+        existing["NOTIBEL_CODEX_CHAIN_NOTIFY_JSON_B64"] = base64.b64encode(json.dumps(chained_notify).encode("utf-8")).decode("ascii")
+    else:
+        existing.pop("NOTIBEL_CODEX_CHAIN_NOTIFY_JSON_B64", None)
 
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text("".join(f"{key}={value}\n" for key, value in sorted(existing.items())))
@@ -165,12 +231,14 @@ def update_codex_global_state(path: Path) -> None:
 def main() -> int:
     args = parse_args()
     repo_root = Path(args.repo_root).resolve()
+    codex_notify_script = str(repo_root / "codex-notify.sh")
+    codex_notify_fanout = str(repo_root / "codex-notify-fanout.sh")
 
     update_claude_settings(Path(args.claude_settings).expanduser(), str(repo_root / "notify.sh"))
-    update_codex_config(Path(args.codex_config).expanduser())
-    update_codex_hooks(Path(args.codex_hooks).expanduser(), str(repo_root / "codex-notify.sh"))
+    chained_notify = update_codex_config(Path(args.codex_config).expanduser(), [codex_notify_fanout])
+    remove_notibel_codex_hooks(Path(args.codex_hooks).expanduser(), codex_notify_script)
     update_codex_global_state(Path(args.codex_global_state).expanduser())
-    update_notibel_config(Path(args.config_file).expanduser(), args.server_url, args.bitwarden_project_id)
+    update_notibel_config(Path(args.config_file).expanduser(), args.server_url, args.bitwarden_project_id, chained_notify)
 
     print(f"Updated Claude settings: {Path(args.claude_settings).expanduser()}")
     print(f"Updated Codex config: {Path(args.codex_config).expanduser()}")
