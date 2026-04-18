@@ -10,3 +10,4 @@ ios/Config/Local.xcconfig
 *.xcuserstate
 xcuserdata/
 **/xcuserdata/
+AGENTS.md
