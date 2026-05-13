@@ -99,20 +99,30 @@ load_publish_token_from_bitwarden() {
     [ -n "$NOTIBEL_BWS_PROJECT_ID" ] || return 0
 
     command -v security >/dev/null 2>&1 || return 0
-    command -v bws >/dev/null 2>&1 || return 0
+    local bws_bin
+    bws_bin=$(command -v bws 2>/dev/null || true)
+    if [ -z "$bws_bin" ]; then
+        for candidate in "$HOME/.local/bin/bws" /opt/homebrew/bin/bws /usr/local/bin/bws; do
+            if [ -x "$candidate" ]; then
+                bws_bin="$candidate"
+                break
+            fi
+        done
+    fi
+    [ -n "$bws_bin" ] || return 0
 
     local access_token
     access_token=$(security find-generic-password -w -s "$NOTIBEL_BWS_SERVICE" -a "$NOTIBEL_BWS_ACCOUNT" 2>/dev/null) || return 0
 
     local secret_id
     secret_id=$(BWS_ACCESS_TOKEN="$access_token" \
-        bws secret list "$NOTIBEL_BWS_PROJECT_ID" 2>/dev/null | \
+        "$bws_bin" secret list "$NOTIBEL_BWS_PROJECT_ID" 2>/dev/null | \
         jq -r '.[] | select(.key == "NOTIBEL_PUBLISH_TOKEN") | .id' | \
         head -n 1) || return 0
     [ -n "$secret_id" ] || return 0
 
     NOTIBEL_PUBLISH_TOKEN=$(BWS_ACCESS_TOKEN="$access_token" \
-        bws secret get "$secret_id" 2>/dev/null | jq -r '.value // empty') || return 0
+        "$bws_bin" secret get "$secret_id" 2>/dev/null | jq -r '.value // empty') || return 0
 }
 
 publish_notibel() {
