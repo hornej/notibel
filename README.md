@@ -337,6 +337,7 @@ The generated config file stores:
 - `NOTIBEL_BWS_PROJECT_ID`
 - `NOTIBEL_BWS_SERVICE`
 - `NOTIBEL_BWS_ACCOUNT`
+- `PLAY_SOUND` (optional)
 
 After that:
 
@@ -352,6 +353,23 @@ After that:
 If you are not using Bitwarden, you can still use the hook scripts. Set
 `NOTIBEL_URL` and `NOTIBEL_PUBLISH_TOKEN` in `~/.config/notibel/config.env`
 yourself, or export them in the shell that launches the hook.
+
+### Local macOS Sound
+
+The macOS Claude and Codex publisher scripts play the system Glass sound by
+default after publishing a completion event. To keep Notibel phone/server
+notifications but silence the local Mac sound, add this to
+`~/.config/notibel/config.env`:
+
+```bash
+PLAY_SOUND=false
+```
+
+To turn the local sound back on, either remove that line or set:
+
+```bash
+PLAY_SOUND=true
+```
 
 ## Install Desktop Hooks On Windows
 
